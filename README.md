@@ -1,4 +1,5 @@
-![CI workflow](https://github.com/UCDenver-ccp/translator-concept-recognition/actions/workflows/Java%20CI/badge.svg)
+![Java CI workflow](https://github.com/UCDenver-ccp/translator-concept-recognition/workflows/Java%20CI/badge.svg)
+
 
 
 # translator-concept-recognition
