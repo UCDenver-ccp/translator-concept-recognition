@@ -7,7 +7,7 @@ FROM adoptopenjdk:8-jdk
 RUN apt-get update && apt-get install -y \
     maven \
     wget \
-    git
+    jq
 
 RUN groupadd --gid 9001 dev && \
     useradd --create-home --shell /bin/bash --no-log-init -u 9001 -g dev dev
@@ -30,6 +30,8 @@ RUN wget https://github.com/stanfordnlp/CoreNLP/archive/refs/tags/v4.2.0.tar.gz 
 
 # Copy the IOB file generation code to the container
 COPY iob-code /home/dev/iob-code
+COPY scripts/crf/craft /home/dev/scripts
+COPY scripts/crf/crf-performance-to-json.sh /home/dev/scripts
 
 # Give ownership to the dev user
 RUN chown -R dev:dev /home/dev
@@ -43,21 +45,25 @@ RUN mvn clean install
 RUN mkdir /home/dev/iob-output && \
     mvn exec:java -Dexec.mainClass="edu.cuanschutz.ccp.iob.craft.CraftIOBFileFactory" -Dexec.args="/home/dev/CRAFT-4.0.1 /home/dev/iob-output OB"
 
-# TODO: aggregate ob files here
+# aggregate ob files here
+RUN chmod 755 /home/dev/scripts/*.sh && \
+    /home/dev/scripts/aggregate.sh && \
+    mkdir /home/dev/crf-performance && \
+    mkdir /home/dev/crf-models
 
 # Copy CRF config and build scripts to the container
-USER root
-COPY scripts/crf/craft /home/dev/scripts
-COPY scripts/crf/crf-performance-to-json.sh /home/dev/scripts
-RUN chown -R dev:dev /home/dev/scripts
-RUN apt-get update && apt-get install -y \
-    jq
+# USER root
+# COPY scripts/crf/craft /home/dev/scripts
+# COPY scripts/crf/crf-performance-to-json.sh /home/dev/scripts
+# COPY scripts/crf/aggregate.sh /home/dev/scripts
+# RUN chown -R dev:dev /home/dev/scripts
+    
 
-USER dev
-RUN chmod 755 /home/dev/scripts/*.sh && \
-    mkdir /home/dev/crf-performance && \
-    mkdir /home/dev/iob-output/aggregated && \
-    mkdir /home/dev/crf-models && \
-    /home/dev/scripts/aggregate.sh
+# USER dev
+# RUN chmod 755 /home/dev/scripts/*.sh && \
+#     mkdir /home/dev/crf-performance && \
+#     # mkdir /home/dev/iob-output/aggregated && \
+#     mkdir /home/dev/crf-models && \
+#     /home/dev/scripts/aggregate.sh
     
 ENTRYPOINT ["/home/dev/scripts/craft-crf-entrypoint.sh"]
