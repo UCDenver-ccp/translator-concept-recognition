@@ -132,16 +132,6 @@ public class NcbiDiseaseCorpusToOBFormat {
 		for (NcbiDiseaseCorpusParser parser = new NcbiDiseaseCorpusParser(corpusFile); parser.hasNext();) {
 			TextDocument td = parser.next();
 
-//			if (td.getSourceid().equals("10323740")) {
-//
-//				for (TextAnnotation annot : td.getAnnotations()) {
-//					// doesn't matter the id -- we need it to pass the filter/regex in the
-//					// IOBDocumentWriter
-////					annot.getClassMention().setMentionName(ENTITY);
-//					System.out.println(annot.getClassMention().getMentionName());
-//				}
-//				System.exit(-1);
-//			}
 			File outputFile = new File(outputDir, td.getSourceid() + ".ob");
 
 			// document contains the disease mention annotations -- need to add tokens and
@@ -252,16 +242,6 @@ public class NcbiDiseaseCorpusToOBFormat {
 			sentenceDetector = initializeSentenceDetector();
 
 			Tokenizer simpleTokenizer = SimpleTokenizer.INSTANCE;
-
-//			String set = "train";
-//			String set = "develop";
-//			String set = "test";
-
-//			File corpusFile = new File(String.format(
-//					"/Users/bill/projects/ncats-translator/biolink-text-mining/mondo/ncbi-disease-corpus/NCBI%sset_corpus.txt",
-//					set));
-//			File outputDir = new File(String.format(
-//					"/Users/bill/projects/ncats-translator/biolink-text-mining/mondo/ncbi-disease-corpus/ob/%s", set));
 
 			convertCorpus(corpusFile, Format.OB, sentenceDetector, simpleTokenizer, outputDir);
 
