@@ -1,5 +1,7 @@
 #!/bin/bash
 
+mkdir /home/dev/iob-output/aggregated
+
 for f in /home/dev/iob-output/dev/CHEBI/CHEBI+extensions/ob/*.ob; do (cat "${f}"; echo) >> /home/dev/iob-output/aggregated/chebi.dev.ob; done
 for f in /home/dev/iob-output/train/CHEBI/CHEBI+extensions/ob/*.ob; do (cat "${f}"; echo) >> /home/dev/iob-output/aggregated/chebi.train.ob; done
 for f in /home/dev/iob-output/test/CHEBI/CHEBI+extensions/ob/*.ob; do (cat "${f}"; echo) >> /home/dev/iob-output/aggregated/chebi.test.ob; done

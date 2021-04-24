@@ -1,23 +1,25 @@
 #
-# When run, this container will train and evaluate a CRF model over one of the ontologies
-# used by the CRAFT corpus.
+# When run, this container will train and evaluate a CRF model based on the HPO corpus
 #
 FROM adoptopenjdk:8-jdk
 
 RUN apt-get update && apt-get install -y \
     maven \
     wget \
-    jq
+    jq \
+    unrar
 
 RUN groupadd --gid 9001 dev && \
     useradd --create-home --shell /bin/bash --no-log-init -u 9001 -g dev dev
     
-WORKDIR /home/dev
+WORKDIR /home/dev/corpus
 
-# Download the CRAFT corpus
-RUN wget https://github.com/UCDenver-ccp/CRAFT/archive/refs/tags/v4.0.1.tar.gz && \
-    tar -xvf v4.0.1.tar.gz && \
-    rm v4.0.1.tar.gz
+# Download the NLM Disease corpus
+RUN wget https://github.com/lasigeBioTM/IHP/raw/master/GSC%2B.rar && \
+    unrar x GSC+.rar && \
+    rm GSC+.rar
+
+WORKDIR /home/dev
 
 # Download and build the Stanford CoreNLP library
 # Note that version 4.2.0 produces a jar with version 4.1.0 -- so we rename it to use 4.2.0
@@ -30,7 +32,7 @@ RUN wget https://github.com/stanfordnlp/CoreNLP/archive/refs/tags/v4.2.0.tar.gz 
 
 # Copy the IOB file generation code to the container
 COPY iob-code /home/dev/iob-code
-COPY scripts/crf/craft /home/dev/scripts
+COPY scripts/crf/human-phenotype /home/dev/scripts
 COPY scripts/crf/crf-performance-to-json.sh /home/dev/scripts
 
 # Give ownership to the dev user
@@ -42,28 +44,15 @@ WORKDIR /home/dev/iob-code
 RUN mvn clean install
 
 # Create the IOB files and split into train/test subsets
-RUN mkdir /home/dev/iob-output && \
-    mvn exec:java -Dexec.mainClass="edu.cuanschutz.ccp.iob.craft.CraftIOBFileFactory" -Dexec.args="/home/dev/CRAFT-4.0.1 /home/dev/iob-output OB"
+RUN mkdir -p /home/dev/iob-output && \
+    mvn exec:java -Dexec.mainClass="edu.cuanschutz.ccp.iob.hpo.SplitHpoCorpusTestTrain" -Dexec.args="/home/dev/corpus /home/dev/iob-output"
+
+RUN mvn exec:java -Dexec.mainClass="edu.cuanschutz.ccp.iob.hpo.HpoCorpusToOBFormat" -Dexec.args="/home/dev/iob-output"
 
 # aggregate ob files here
 RUN chmod 755 /home/dev/scripts/*.sh && \
-    /home/dev/scripts/aggregate.sh && \
     mkdir /home/dev/crf-performance && \
-    mkdir /home/dev/crf-models
+    mkdir /home/dev/crf-models && \
+    /home/dev/scripts/aggregate.sh
 
-# Copy CRF config and build scripts to the container
-# USER root
-# COPY scripts/crf/craft /home/dev/scripts
-# COPY scripts/crf/crf-performance-to-json.sh /home/dev/scripts
-# COPY scripts/crf/aggregate.sh /home/dev/scripts
-# RUN chown -R dev:dev /home/dev/scripts
-    
-
-# USER dev
-# RUN chmod 755 /home/dev/scripts/*.sh && \
-#     mkdir /home/dev/crf-performance && \
-#     # mkdir /home/dev/iob-output/aggregated && \
-#     mkdir /home/dev/crf-models && \
-#     /home/dev/scripts/aggregate.sh
-    
-ENTRYPOINT ["/home/dev/scripts/craft-crf-entrypoint.sh"]
+ENTRYPOINT ["/home/dev/scripts/human-phenotype-crf-entrypoint.sh"]

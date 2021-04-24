@@ -1,0 +1,7 @@
+3740720###[200::219]	HP_0000077 | lateral cervical sinuses###[196::220]	HP_0000077 | lateral cervical sinuses
+3134615###[631::639]	HP_0002664 | tumors###[633::639]	HP_0002664 | tumors
+17353411###[694::714]	HP_0100014 | epiretinal membranes###[693::713]	HP_0100014 | epiretinal membranes
+10569966###[1187::1208]	HP_0000957 | café au lait patches###[1187::1207]	HP_0000957 | café au lait patches
+10569966###[1248::1265]	HP_0006746 | neurofibromatosis###[1247::1264]	HP_0006746 | neurofibromatosis
+6741990###[575::590]	HP_0000118 | anomalies of other internal organs###[556::590]	HP_0000118 | anomalies of other internal organs
+11312426###[793::801]	HP_0010609 | skin tags###[793::801]	HP_0010609 | skin tag
