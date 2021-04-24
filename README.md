@@ -30,3 +30,15 @@ docker run --rm -v [LOCAL_MODEL_DIR]:/home/dev/crf-models -v [LOCAL_EVAL_DIR]:/h
 where,
 * [LOCAL_MODEL_DIR] is a directory on the host machine where the CRF model will be written
 * [LOCAL_EVAL_DIR] is a directory on the host machine where the evaluation metrics for the trained model against the test set will be written
+
+
+# Training a CRF on the Lobo et al HPO Corpus
+
+```
+docker build -t hpo-crf -f human-phenotype.crf.Dockerfile .
+docker run --rm -v [LOCAL_MODEL_DIR]:/home/dev/crf-models -v [LOCAL_EVAL_DIR]:/home/dev/crf-performance hpo-crf
+```
+
+where,
+* [LOCAL_MODEL_DIR] is a directory on the host machine where the CRF model will be written
+* [LOCAL_EVAL_DIR] is a directory on the host machine where the evaluation metrics for the trained model against the test set will be written
