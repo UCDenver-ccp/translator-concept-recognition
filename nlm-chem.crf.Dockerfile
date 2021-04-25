@@ -1,5 +1,5 @@
 #
-# When run, this container will train and evaluate a CRF model based on the NCBI Disease Corpus
+# When run, this container will train and evaluate a CRF model based on the NLM-Chem Corpus
 #
 FROM adoptopenjdk:8-jdk
 
@@ -14,13 +14,16 @@ RUN groupadd --gid 9001 dev && \
     
 WORKDIR /home/dev/corpus
 
-# Download the NCBI Disease corpus
-RUN wget https://www.ncbi.nlm.nih.gov/CBBresearch/Dogan/DISEASE/NCBItrainset_corpus.zip && \
-    wget https://www.ncbi.nlm.nih.gov/CBBresearch/Dogan/DISEASE/NCBIdevelopset_corpus.zip && \
-    wget https://www.ncbi.nlm.nih.gov/CBBresearch/Dogan/DISEASE/NCBItestset_corpus.zip && \
-    unzip NCBItrainset_corpus.zip && rm NCBItrainset_corpus.zip && \
-    unzip NCBIdevelopset_corpus.zip && rm NCBIdevelopset_corpus.zip && \
-    unzip NCBItestset_corpus.zip && rm NCBItestset_corpus.zip
+# Download the NLM-Chem corpus
+RUN wget https://ftp.ncbi.nlm.nih.gov/pub/lu/NLMChem/NLM-Chem-corpus.zip && \
+    unzip NLM-Chem-corpus.zip && rm NLM-Chem-corpus.zip
+
+WORKDIR /home/dev/corpus/FINAL_v1
+RUN chmod 755 make_splits.sh && ./make_splits.sh
+
+# /home/dev/corpus/FINAL_v1/Split_Dev
+# /home/dev/corpus/FINAL_v1/Split_Test
+# /home/dev/corpus/FINAL_v1/Split_Train
 
 WORKDIR /home/dev
 
@@ -35,7 +38,7 @@ RUN wget https://github.com/stanfordnlp/CoreNLP/archive/refs/tags/v4.2.0.tar.gz 
 
 # Copy the IOB file generation code to the container
 COPY iob-code /home/dev/iob-code
-COPY scripts/crf/ncbi-disease /home/dev/scripts
+COPY scripts/crf/nlm-chem /home/dev/scripts
 COPY scripts/crf/crf-performance-to-json.sh /home/dev/scripts
 
 # Give ownership to the dev user
@@ -48,9 +51,9 @@ RUN mvn clean install
 
 # Create the IOB files and split into train/test subsets
 RUN mkdir /home/dev/iob-output && \
-    mvn exec:java -Dexec.mainClass="edu.cuanschutz.ccp.iob.disease.NcbiDiseaseCorpusToOBFormat" -Dexec.args="/home/dev/corpus/NCBItrainset_corpus.txt /home/dev/iob-output/train OB" && \
-    mvn exec:java -Dexec.mainClass="edu.cuanschutz.ccp.iob.disease.NcbiDiseaseCorpusToOBFormat" -Dexec.args="/home/dev/corpus/NCBIdevelopset_corpus.txt /home/dev/iob-output/develop OB" && \
-    mvn exec:java -Dexec.mainClass="edu.cuanschutz.ccp.iob.disease.NcbiDiseaseCorpusToOBFormat" -Dexec.args="/home/dev/corpus/NCBItestset_corpus.txt /home/dev/iob-output/test OB"
+    mvn exec:java -Dexec.mainClass="edu.cuanschutz.ccp.iob.chemical.NlmChemCorpusToOBFormat" -Dexec.args="/home/dev/corpus/FINAL_v1/Split_Dev /home/dev/iob-output/dev OB" && \
+    mvn exec:java -Dexec.mainClass="edu.cuanschutz.ccp.iob.chemical.NlmChemCorpusToOBFormat" -Dexec.args="/home/dev/corpus/FINAL_v1/Split_Test /home/dev/iob-output/test OB" && \
+    mvn exec:java -Dexec.mainClass="edu.cuanschutz.ccp.iob.chemical.NlmChemCorpusToOBFormat" -Dexec.args="/home/dev/corpus/FINAL_v1/Split_Train /home/dev/iob-output/train OB"
 
 # aggregate ob files here
 RUN chmod 755 /home/dev/scripts/*.sh && \
@@ -58,4 +61,4 @@ RUN chmod 755 /home/dev/scripts/*.sh && \
     mkdir /home/dev/crf-models && \
     /home/dev/scripts/aggregate.sh
 
-ENTRYPOINT ["/home/dev/scripts/ncbi-disease-crf-entrypoint.sh"]
+ENTRYPOINT ["/home/dev/scripts/nlm-chem-crf-entrypoint.sh"]

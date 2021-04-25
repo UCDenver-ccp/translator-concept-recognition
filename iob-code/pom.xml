@@ -75,6 +75,12 @@
 			<artifactId>file-conversion</artifactId>
 			<version>0.2.3</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.pengyifan.bioc/pengyifan-bioc -->
+		<dependency>
+			<groupId>com.pengyifan.bioc</groupId>
+			<artifactId>pengyifan-bioc</artifactId>
+			<version>1.0.3</version>
+		</dependency>
 	</dependencies>
 
 	<repositories>

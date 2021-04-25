@@ -32,9 +32,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import edu.cuanschutz.ccp.iob.CorpusToOBFormat;
 import edu.cuanschutz.ccp.iob.IOBDocumentWriter;
 import edu.cuanschutz.ccp.iob.IOBDocumentWriter.Format;
 import edu.cuanschutz.ccp.iob.StanfordIOBDocumentWriter;
@@ -59,9 +61,14 @@ import opennlp.tools.util.Span;
  * detect disease entities.
  *
  */
-public class NcbiDiseaseCorpusToOBFormat {
+public class NcbiDiseaseCorpusToOBFormat extends CorpusToOBFormat {
 
-	static List<TextAnnotation> myFilterSentenceAndTokenAnnots(List<TextAnnotation> annotations) {
+	public NcbiDiseaseCorpusToOBFormat(Iterator<TextDocument> corpusParser) {
+		super(corpusParser);
+	}
+
+	@Override
+	protected List<TextAnnotation> myFilterSentenceAndTokenAnnots(List<TextAnnotation> annotations) {
 		List<TextAnnotation> sentenceAndTokenAnnots = new ArrayList<TextAnnotation>();
 		for (TextAnnotation annot : annotations) {
 			String type = annot.getClassMention().getMentionName();
@@ -72,7 +79,8 @@ public class NcbiDiseaseCorpusToOBFormat {
 		return sentenceAndTokenAnnots;
 	}
 
-	static List<TextAnnotation> myGetConceptAnnotations(List<TextAnnotation> annotations) {
+	@Override
+	protected List<TextAnnotation> myGetConceptAnnotations(List<TextAnnotation> annotations) {
 		List<TextAnnotation> conceptAnnotations = new ArrayList<TextAnnotation>();
 
 		Set<String> annotTypes = new HashSet<String>();
@@ -85,148 +93,7 @@ public class NcbiDiseaseCorpusToOBFormat {
 			}
 		}
 
-		// for (String type : annotTypes) {
-		// System.out.println(type);
-		// }
-
 		return conceptAnnotations;
-	}
-
-	public static void convertCorpus(File corpusFile, Format format, SentenceDetector sentenceDetector,
-			Tokenizer simpleTokenizer, File outputDir) throws FileNotFoundException, IOException {
-
-		IOBDocumentWriter docWriter = null;
-		switch (format) {
-		case IOB:
-			docWriter = new StanfordIOBDocumentWriter() {
-
-				@Override
-				protected List<TextAnnotation> filterSentenceAndTokenAnnots(List<TextAnnotation> annotations) {
-					return myFilterSentenceAndTokenAnnots(annotations);
-				}
-
-				@Override
-				protected List<TextAnnotation> getConceptAnnotations(List<TextAnnotation> annotations) {
-					return myGetConceptAnnotations(annotations);
-				}
-			};
-			break;
-		case OB:
-			docWriter = new StanfordOBDocumentWriter() {
-
-				@Override
-				protected List<TextAnnotation> filterSentenceAndTokenAnnots(List<TextAnnotation> annotations) {
-					return myFilterSentenceAndTokenAnnots(annotations);
-				}
-
-				@Override
-				protected List<TextAnnotation> getConceptAnnotations(List<TextAnnotation> annotations) {
-					return myGetConceptAnnotations(annotations);
-				}
-			};
-			break;
-		default:
-			throw new IllegalArgumentException("Format " + format.name() + " is not supported.");
-		}
-
-		for (NcbiDiseaseCorpusParser parser = new NcbiDiseaseCorpusParser(corpusFile); parser.hasNext();) {
-			TextDocument td = parser.next();
-
-			File outputFile = new File(outputDir, td.getSourceid() + ".ob");
-
-			// document contains the disease mention annotations -- need to add tokens and
-			// sentences
-
-			// get sentences then tokenize each sentence
-			List<TextAnnotation> sentences = getSentenceAnnots(sentenceDetector, td.getText());
-			List<TextAnnotation> tokens = extractTokenAnnots(simpleTokenizer, sentences);
-
-			td.addAnnotations(sentences);
-			td.addAnnotations(tokens);
-
-			docWriter.serialize(td, outputFile, CharacterEncoding.UTF_8);
-
-		}
-
-	}
-
-	private static List<TextAnnotation> splitSentencesOnLineBreaks(List<TextAnnotation> annots) {
-		/*
-		 * divide any sentences with line breaks into multiple sentences, splitting at
-		 * the line breaks
-		 */
-		List<TextAnnotation> toKeep = new ArrayList<TextAnnotation>();
-		for (TextAnnotation annot : annots) {
-			String coveredText = annot.getCoveredText();
-			if (coveredText.contains("\n")) {
-				String[] sentences = coveredText.split("\\n");
-				int index = annot.getAnnotationSpanStart();
-				for (String s : sentences) {
-					if (!s.isEmpty()) {
-						TextAnnotation sentAnnot = createSentenceAnnot(index, index + s.length(), s);
-						index = index + s.length() + 1;
-						toKeep.add(sentAnnot);
-					} else {
-						index++;
-					}
-				}
-				// validate - span end of more recently added sentence should be equal to the
-				// span end of the original annot
-				int originalSpanEnd = annot.getAnnotationSpanEnd();
-				int end = toKeep.get(toKeep.size() - 1).getAnnotationSpanEnd();
-				assert end == originalSpanEnd;
-			} else {
-				toKeep.add(annot);
-			}
-		}
-		return toKeep;
-	}
-
-	private static TextAnnotation createSentenceAnnot(int spanStart, int spanEnd, String coveredText) {
-		DefaultTextAnnotation annot = new DefaultTextAnnotation(spanStart, spanEnd);
-		annot.setCoveredText(coveredText);
-		DefaultClassMention cm = new DefaultClassMention("sentence");
-		annot.setClassMention(cm);
-		annot.setAnnotator(new Annotator(null, "OpenNLP", "OpenNLP"));
-		return annot;
-	}
-
-	private static List<TextAnnotation> extractTokenAnnots(Tokenizer tokenizer, List<TextAnnotation> sentences) {
-		TextAnnotationFactory factory = TextAnnotationFactory.createFactoryWithDefaults();
-		List<TextAnnotation> tokenAnnots = new ArrayList<TextAnnotation>();
-		for (TextAnnotation sentence : sentences) {
-			int documentOffset = sentence.getAnnotationSpanStart();
-			Span[] tokenSpans = tokenizer.tokenizePos(sentence.getCoveredText());
-
-			for (Span tokenSpan : tokenSpans) {
-				TextAnnotation tokenAnnot = factory.createAnnotation(tokenSpan.getStart() + documentOffset,
-						tokenSpan.getEnd() + documentOffset,
-						tokenSpan.getCoveredText(sentence.getCoveredText()).toString(), "token");
-				tokenAnnots.add(tokenAnnot);
-			}
-		}
-		return tokenAnnots;
-	}
-
-	private static List<TextAnnotation> getSentenceAnnots(SentenceDetector sentenceDetector, String plainText) {
-		List<TextAnnotation> annots = new ArrayList<TextAnnotation>();
-		Span[] spans = sentenceDetector.sentPosDetect(plainText);
-		for (Span span : spans) {
-			TextAnnotation annot = createSentenceAnnot(span.getStart(), span.getEnd(),
-					span.getCoveredText(plainText).toString());
-			annots.add(annot);
-		}
-
-		List<TextAnnotation> sentences = splitSentencesOnLineBreaks(annots);
-		return sentences;
-	}
-
-	private static SentenceDetectorME initializeSentenceDetector() throws IOException {
-		InputStream modelStream = ClassPathUtil.getResourceStreamFromClasspath(NcbiDiseaseCorpusToOBFormat.class,
-				"/de/tudarmstadt/ukp/dkpro/core/opennlp/lib/sentence-en-maxent.bin");
-		SentenceModel model = new SentenceModel(modelStream);
-		SentenceDetectorME sentenceDetector = new SentenceDetectorME(model);
-		return sentenceDetector;
 	}
 
 	public static void main(String[] args) {
@@ -243,7 +110,9 @@ public class NcbiDiseaseCorpusToOBFormat {
 
 			Tokenizer simpleTokenizer = SimpleTokenizer.INSTANCE;
 
-			convertCorpus(corpusFile, Format.OB, sentenceDetector, simpleTokenizer, outputDir);
+			NcbiDiseaseCorpusParser corpusParser = new NcbiDiseaseCorpusParser(corpusFile);
+			NcbiDiseaseCorpusToOBFormat converter = new NcbiDiseaseCorpusToOBFormat(corpusParser);
+			converter.convertCorpus(Format.OB, sentenceDetector, simpleTokenizer, outputDir);
 
 		} catch (IOException e) {
 			e.printStackTrace();
