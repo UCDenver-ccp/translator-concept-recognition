@@ -70,10 +70,10 @@ jobs:
           project_id: "$PROJECT_ID"
           service_account_key: "$GCS_SERVICE_ACCOUNT"
           version: '290.0.1'
-    - name: Configure Docker Authentication
-      run: gcloud --quiet auth configure-docker
-    - name: Build Docker Image
-      run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:0.1_test" -f "$DOCKERFILE" .
-    - name: Publish Docker Image to Google Container Registry
-      run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:0.1_test"
+      - name: Configure Docker Authentication
+        run: gcloud --quiet auth configure-docker
+      - name: Build Docker Image
+        run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:0.1_test" -f "$DOCKERFILE" .
+      - name: Publish Docker Image to Google Container Registry
+        run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:0.1_test"
         
