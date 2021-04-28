@@ -4,7 +4,7 @@
 #
 
 CLASSPATH="/home/dev/CoreNLP-${STANFORD_CORENLP_VERSION}/target/stanford-corenlp-${STANFORD_CORENLP_VERSION}.jar"
-MODEL_FILE="/home/dev/crf-models/nlmchem-ner-model.ser.gz"
+MODEL_FILE="/home/dev/crf-models/nlmchem-ner-model-${VERSION}.ser.gz"
 TEST_FILE="/home/dev/iob-output/aggregated/nlmchem.dev.ob"
 
 echo "CLASSPATH: $CLASSPATH"

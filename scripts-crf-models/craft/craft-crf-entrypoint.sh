@@ -5,7 +5,13 @@
 
 ONT=$1
 
-# train the model - model will be written to /home/dev/crf-models/craft/[ONT]-ner-model.ser.gz
+# extract the version from the MODEL_VERSIONS file - this is used as part of the file name for the serialized model file
+export VERSION=$(grep "${ONT^^}.CRAFT" /home/dev/MODEL_VERSIONS | cut -f 2 -d "=")
+
+# replace the VERSION placeholder in the properties template file to create the properties file used by train.sh
+envsubst < /home/dev/scripts/properties/${ONT}.properties.template > /home/dev/scripts/properties/${ONT}.properties
+
+# train the model - model will be written to /home/dev/crf-models/craft/[ONT]-ner-model.[VERSION].ser.gz
 /home/dev/scripts/train.sh ${ONT}
 
 # evaluate the model on the test set and write results (the standard error output stream) to file

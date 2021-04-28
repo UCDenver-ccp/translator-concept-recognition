@@ -5,7 +5,7 @@
 
 ONT=$1
 CLASSPATH="/home/dev/CoreNLP-${STANFORD_CORENLP_VERSION}/target/stanford-corenlp-${STANFORD_CORENLP_VERSION}.jar"
-MODEL_FILE="/home/dev/crf-models/${ONT}-ner-model.ser.gz"
+MODEL_FILE="/home/dev/crf-models/${ONT}-ner-model-${VERSION}.ser.gz"
 TEST_FILE="/home/dev/iob-output/aggregated/${ONT}.test.ob"
 
 echo "CLASSPATH: $CLASSPATH"
