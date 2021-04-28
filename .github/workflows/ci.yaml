@@ -45,7 +45,7 @@ jobs:
         with: 
           githubToken: ${{ secrets.GITHUB_TOKEN }}
       - name: skip-ncbi-disease
-        run: sh -c ".github/workflows/file-contains.sh ncbi-disease $HOME/files_modified.json"
+        run: pwd && ls
 
   model-publish-crf-ncbi-disease:
     runs-on: ubuntu-latest
