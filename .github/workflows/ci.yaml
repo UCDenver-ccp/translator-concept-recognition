@@ -40,9 +40,9 @@ jobs:
     outputs:
       status: ${{ steps.early.conclusion }}
     steps:
-      - id: ncbi-disease file_changes
+      - id: ncbi-disease_file_changes
         uses: trilom/file-changes-action@v1.2.3
-      - name: skip ncbi-disease
+      - name: skip-ncbi-disease
         run: ./.github/file-contains.sh ncbi-disease "$HOME/files_modified.json"
 
   model-publish-crf-ncbi-disease:
