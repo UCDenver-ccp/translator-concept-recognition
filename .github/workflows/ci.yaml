@@ -47,12 +47,12 @@ jobs:
         with: 
           githubToken: ${{ secrets.GITHUB_TOKEN }}
       - name: skip-ncbi-disease
-        run: sh -c ".github/workflows/file-contains.sh ncbi-disease $HOME/files_modified.json"
+        run: sh -c ".github/workflows/file-contains.sh yaml $HOME/files_modified.json"
 
   model-publish-crf-ncbi-disease:
     runs-on: ubuntu-latest
     needs: check-ncbi-disease
-    if: needs.check-ncbi-disease.status == 'failure'
+    if: needs.check-ncbi-disease.status == 'success'
     name: Publish Disease CRF model
     steps:
       - id: echo
