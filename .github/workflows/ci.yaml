@@ -45,7 +45,7 @@ jobs:
         with: 
           githubToken: ${{ secrets.GITHUB_TOKEN }}
       - name: skip-ncbi-disease
-        run: ls -la
+        run: ls -la ..
 
   model-publish-crf-ncbi-disease:
     runs-on: ubuntu-latest
