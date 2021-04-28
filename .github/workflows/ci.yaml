@@ -42,6 +42,8 @@ jobs:
     steps:
       - id: ncbi-disease_file_changes
         uses: trilom/file-changes-action@v1.2.3
+        with: 
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
       - name: skip-ncbi-disease
         run: ./.github/file-contains.sh ncbi-disease "$HOME/files_modified.json"
 
