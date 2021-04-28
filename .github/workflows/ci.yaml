@@ -41,7 +41,7 @@ jobs:
       status: ${{ steps.early.conclusion }}
     steps:
       - id: ncbi-disease_file_changes
-        uses: trilom/file-changes-action@v1.2.3
+        uses: trilom/file-changes-action@v1.2.4
         with: 
           githubToken: ${{ secrets.GITHUB_TOKEN }}
       - name: skip-ncbi-disease
