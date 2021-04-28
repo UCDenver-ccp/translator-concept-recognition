@@ -52,7 +52,7 @@ jobs:
   model-publish-crf-ncbi-disease:
     runs-on: ubuntu-latest
     needs: check-ncbi-disease
-    if: needs.check-ncbi-disease.status == 'success'
+    if: needs.check-ncbi-disease.outputs.status == 'success'
     name: Publish Disease CRF model
     steps:
       - id: echo
