@@ -62,6 +62,7 @@ jobs:
       DOCKERFILE: build-crf-models/ncbi-disease.crf.Dockerfile
       GCE_MACHINE_TYPE: n1-highmem-16
       GCE_REGION: us-central1
+      MODEL_VERION: $(grep "DISEASE.NCBIDISEASE" MODEL_VERSIONS | cut -f 2 -d "=")
     steps:
       - uses: actions/checkout@v2
       - name: Set up Cloud SDK
