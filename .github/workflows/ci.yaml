@@ -1,4 +1,4 @@
-name: Java CI
+name: CI/CD CRF containers & models
 
 on:
   # Trigger the workflow on push or pull request,
@@ -10,8 +10,13 @@ on:
     branches:
       - main
 
+# env:
+#   PROJECT_ID: ${{ secrets.GCE_PROJECT }}
+#   GCS_SERVICE_ACCOUNT: ${{ secrets.GCE_SA_KEY }}
+
 jobs:
-  build:
+  ci:
+    name: Java CI 
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -27,4 +32,36 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
       - name: Build with Maven
-        run: mvn --batch-mode --update-snapshots verify --file iob-code/pom.xml
+        run: mvn --batch-mode --update-snapshots verify --file code/crf-utility/pom.xml
+
+  check-ncbi-disease:
+    needs: ci
+    outputs:
+      status: ${{ steps.early.conclusion }}
+    steps:
+      - id: ncbi-disease file_changes
+        uses: trilom/file-changes-action@v1.2.3
+        name: skip ncbi-disease
+        run: ./.github/file-contains.sh ncbi-disease "$HOME/files_modified.json"
+
+  model-publish-crf-ncbi-disease:
+    needs: check-ncbi-disease
+    if: needs.check-ncbi-disease.status == 'success'
+    name: Publish Disease CRF model
+    steps:
+      - id: echo
+        name: echo check
+        run: echo "Running model publish!"
+        
+
+
+  #   runs-on: ubuntu-latest
+  #   env:
+  #     DOCKERFILE: ncbi-disease.crf.Dockerfile
+  #     GCE_MACHINE_TYPE: n1-highmem-16
+  #     GCE_REGION: us-central1
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
+  #       with:
+  #         ref: master
