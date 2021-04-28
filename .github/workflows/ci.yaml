@@ -10,9 +10,9 @@ on:
     branches:
       - main
 
-# env:
-#   PROJECT_ID: ${{ secrets.GCE_PROJECT }}
-#   GCS_SERVICE_ACCOUNT: ${{ secrets.GCE_SA_KEY }}
+env:
+  PROJECT_ID: ${{ secrets.GCE_PROJECT }}
+  GCS_SERVICE_ACCOUNT: ${{ secrets.GCE_SA_KEY }}
 
 jobs:
   ci:
@@ -35,7 +35,10 @@ jobs:
         run: mvn --batch-mode --update-snapshots verify --file code/java/crf-utility/pom.xml
 
   check-ncbi-disease:
-    continue-on-error: true
+    continue-on-error: true # the skip-ncbi-disease step checks to see if 'ncbi-disease' or 'src' 
+    # are part of the file names that have been modified. If they are not, the script return 1. 
+    # The continue-on-error flag is set to true so that the action itself doesn't fail when the 
+    # script returns a non-zero code.
     runs-on: ubuntu-latest
     needs: ci
     outputs:
@@ -47,27 +50,29 @@ jobs:
         with: 
           githubToken: ${{ secrets.GITHUB_TOKEN }}
       - id: skip-ncbi-disease
-        run: sh -c ".github/workflows/file-contains.sh ncbi-disease $HOME/files_modified.json"
+        run: sh -c ".github/workflows/file-contains.sh yaml $HOME/files_modified.json"
 
   model-publish-crf-ncbi-disease:
     runs-on: ubuntu-latest
     needs: check-ncbi-disease
     if: needs.check-ncbi-disease.outputs.status == 'success'
     name: Publish Disease CRF model
+    env:
+      IMAGE_NAME: crf-disease
+      DOCKERFILE: build-crf-models/ncbi-disease.crf.Dockerfile
+      GCE_MACHINE_TYPE: n1-highmem-16
+      GCE_REGION: us-central1
     steps:
-      - id: echo
-        name: echo check
-        run: echo "Running model publish!"
+      - uses: actions/checkout@v2
+      - uses: google-github-actions/setup-gcloud@master
+      with:
+        version: '290.0.1'
+        service_account_key: "$GCS_SERVICE_ACCOUNT"
+        project_id: "$PROJECT_ID"
+    - name: Configure Docker Authentication
+      run: gcloud --quiet auth configure-docker
+    - name: Build Docker Image
+      run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:0.1_test" -f "$DOCKERFILE" .
+    - name: Publish Docker Image to Google Container Registry
+      run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:0.1_test"
         
-
-
-  #   runs-on: ubuntu-latest
-  #   env:
-  #     DOCKERFILE: ncbi-disease.crf.Dockerfile
-  #     GCE_MACHINE_TYPE: n1-highmem-16
-  #     GCE_REGION: us-central1
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v2
-  #       with:
-  #         ref: master
