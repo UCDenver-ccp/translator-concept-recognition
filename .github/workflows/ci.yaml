@@ -40,12 +40,13 @@ jobs:
     outputs:
       status: ${{ steps.early.conclusion }}
     steps:
+      - uses: actions/checkout@v2
       - id: ncbi-disease_file_changes
         uses: trilom/file-changes-action@v1.2.4
         with: 
           githubToken: ${{ secrets.GITHUB_TOKEN }}
       - name: skip-ncbi-disease
-        run: ls -la ..
+        run: ls -la
 
   model-publish-crf-ncbi-disease:
     runs-on: ubuntu-latest
