@@ -6,8 +6,11 @@ ARG MODEL_KEY_ARG
 # MODEL_FILE_PREFIX_ARG is the prefix for the cloud storage location for the serialied model
 ARG MODEL_FILE_PREFIX_ARG
 
+ARG MODEL_VERSION_ARG
+
 ENV MODEL_KEY  ${MODEL_KEY_ARG}
 ENV MODEL_FILE_PREFIX ${MODEL_FILE_PREFIX_ARG}
+ENV MODEL_VERSION ${MODEL_VERSION_ARG}
 
 RUN apt-get update && apt-get install -y \
     maven \
@@ -20,8 +23,7 @@ RUN groupadd spring && \
 # Download the CRF model
 COPY MODEL_VERSIONS /home/spring/
 WORKDIR /home/spring/crf-service
-RUN MODEL_VERSION=$(grep "${MODEL_KEY}" /home/spring/MODEL_VERSIONS | cut -f 2 -d "=") && \
-    wget "https://storage.googleapis.com/${MODEL_FILE_PREFIX}${MODEL_VERSION}.ser.gz" -O ner-model.ser.gz
+RUN wget "https://storage.googleapis.com/${MODEL_FILE_PREFIX}${MODEL_VERSION}.ser.gz" -O ner-model.ser.gz
 
 # Download the Java dependencies as the spring user - this only gets run if the pom.xml file 
 # changes and saves time below (during development) when code changes are made and the build is run.
