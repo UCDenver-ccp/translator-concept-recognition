@@ -33,7 +33,6 @@ USER root
 
 # Copy the code into the container
 COPY code/java/crf-service /home/spring/code
-#COPY scripts-crf-service/entity-crf-service-entrypoint.sh /home/spring/crf-service/
 
 # extract the version and artifactId from pom.xml and serialize them to 
 # files so that they can be loaded as environment variables in later steps
