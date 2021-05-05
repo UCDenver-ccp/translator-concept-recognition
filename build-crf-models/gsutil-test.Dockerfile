@@ -9,9 +9,9 @@ RUN apt-get update && apt-get install -y \
 #     jq \
 #     unzip \
 #     gettext \
-#     apt-transport-https \
-#     ca-certificates \
-#     gnupg \
+    apt-transport-https \
+    ca-certificates \
+    gnupg \
     curl 
     
 # Install the Google Cloud SDK
