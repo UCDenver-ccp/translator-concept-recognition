@@ -15,7 +15,7 @@ env:
   GCS_SERVICE_ACCOUNT: ${{ secrets.GCE_SA_KEY }}
   GCE_MACHINE_TYPE: n1-highmem-16
   GCE_REGION: us-central1
-  SHA8: ${{ secrets.GITHUB_SHA::8 }}
+  SHA8: ${{ secrets.GITHUB_SHA }}
 
 jobs:
   # ci:
