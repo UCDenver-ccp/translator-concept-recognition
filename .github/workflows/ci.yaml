@@ -85,7 +85,7 @@ jobs:
             --scale-tier basic --region "$GCE_REGION" \
             --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
       - name: Monitor the training job
-        run: ./scripts/ai-platform/monitor-job.sh "build_ncbi_disease_crf_$GITHUB_SHA"
+        run: sh -c ".github/workflows/monitor-ai-platform-job.sh build_ncbi_disease_crf_$GITHUB_SHA"
        
   # test-gsutil:
   #   runs-on: ubuntu-latest
