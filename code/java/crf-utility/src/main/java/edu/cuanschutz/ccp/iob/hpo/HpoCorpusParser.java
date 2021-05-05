@@ -27,8 +27,10 @@ package edu.cuanschutz.ccp.iob.hpo;
  */
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -37,7 +39,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-import edu.stanford.nlp.io.IOUtils;
+import org.apache.commons.io.IOUtils;
+
 import edu.ucdenver.ccp.common.file.CharacterEncoding;
 import edu.ucdenver.ccp.common.file.reader.Line;
 import edu.ucdenver.ccp.common.file.reader.StreamLineIterator;
@@ -136,7 +139,8 @@ public class HpoCorpusParser implements Iterator<TextDocument> {
 	 * @throws IOException
 	 */
 	private TextDocument parseDocument(File textFile, File annotationFile) throws IOException {
-		String docText = IOUtils.stringFromFile(textFile.getAbsolutePath(), encoding.getCharacterSetName());
+		String docText = IOUtils
+				.toString(new InputStreamReader(new FileInputStream(textFile), encoding.getCharacterSetName()));
 		String docId = textFile.getName();
 		TextAnnotationFactory annotFactory = TextAnnotationFactory.createFactoryWithDefaults(docId);
 		List<TextAnnotation> annots = new ArrayList<TextAnnotation>();

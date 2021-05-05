@@ -40,6 +40,8 @@ WORKDIR /home/dev
 
 # Download and build the Stanford CoreNLP library
 # Note that version 4.2.0 produces a jar with version 4.1.0 -- so we rename it to use 4.2.0
+# ALSO NOTE, if the version of the Stanford CoreNLP library is changed, it MUST ALSO BE CHANGED
+# in code/java/crf-service/pom.xml
 ENV STANFORD_CORENLP_VERSION 4.2.0
 RUN wget https://github.com/stanfordnlp/CoreNLP/archive/refs/tags/v4.2.0.tar.gz && \
     tar -xvf v4.2.0.tar.gz && \
