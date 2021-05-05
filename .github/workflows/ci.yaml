@@ -13,6 +13,8 @@ on:
 env:
   PROJECT_ID: ${{ secrets.GCE_PROJECT }}
   GCS_SERVICE_ACCOUNT: ${{ secrets.GCE_SA_KEY }}
+  GCE_MACHINE_TYPE: n1-highmem-16
+  GCE_REGION: us-central1
 
 jobs:
   # ci:
@@ -78,4 +80,9 @@ jobs:
         run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" .
       - name: Publish Docker Image to Google Container Registry
         run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
-        
+      - name: Submit job to build model to AI-Platform
+        run: |-
+          gcloud ai-platform jobs submit training "build-ncbi-disease-crf_$MODEL_VERSION" \
+            --scale-tier basic --master-machine-type "$GCE_MACHINE_TYPE" --region "$GCE_REGION" \
+            --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
+       
