@@ -76,10 +76,10 @@ jobs:
         run: gcloud --quiet auth configure-docker
       - name: Set MODEL_VERSION env
         run: echo "MODEL_VERSION=$(grep 'DISEASE.NCBIDISEASE' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
-      - name: Build Docker Image
-        run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" .
-      - name: Publish Docker Image to Google Container Registry
-        run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
+      # - name: Build Docker Image
+      #   run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" .
+      # - name: Publish Docker Image to Google Container Registry
+      #   run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
       - name: Submit job to build model to AI-Platform
         run: |-
           gcloud ai-platform jobs submit training "build-ncbi-disease-crf_$MODEL_VERSION" \
