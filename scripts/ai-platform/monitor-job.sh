@@ -10,7 +10,7 @@ JOB_ID=$1
 STATE="QUEUED"
 until [ "$STATE" == "FAILED" ] || [ "$STATE" == "SUCCEEDED" ]
 do
-    # sleep 10
+    sleep 30
     STATE=$(gcloud ai-platform jobs describe $JOB_ID | grep state | cut -f 2 -d " ")
     echo "STATE: $STATE"
 done
