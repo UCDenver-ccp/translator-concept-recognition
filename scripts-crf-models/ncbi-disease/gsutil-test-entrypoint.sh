@@ -4,4 +4,4 @@
 #
 
 # gsutil the model and the performance data to cloud storage
-gsutil /home/dev/scripts/gsutil-test-entrypoint.sh gs://translator-text-workflow-dev-public/models/entities/crf/ncbidisease/
+gsutil cp /home/dev/scripts/gsutil-test-entrypoint.sh gs://translator-text-workflow-dev-public/models/entities/crf/ncbidisease/
