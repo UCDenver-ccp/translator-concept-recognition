@@ -72,7 +72,7 @@ jobs:
           project_id: ${{ secrets.GCE_PROJECT }}
           service_account_key: ${{ secrets.GCE_SA_KEY }}
           version: '290.0.1'
-          SHA8: ${GITHUB_SHA::8}
+          SHA8: ${GITHUB_SHA}
       - name: Configure Docker Authentication
         run: gcloud --quiet auth configure-docker
       - name: Set MODEL_VERSION env
@@ -83,7 +83,7 @@ jobs:
       #   run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
       - name: Submit job to build model to AI-Platform
         run: |-
-          gcloud ai-platform jobs submit training build-ncbi-disease-crf_${SHA8} \
+          gcloud ai-platform jobs submit "training build-ncbi-disease-crf_$SHA8"" \
             --scale-tier basic --master-machine-type "$GCE_MACHINE_TYPE" --region "$GCE_REGION" \
             --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
        
