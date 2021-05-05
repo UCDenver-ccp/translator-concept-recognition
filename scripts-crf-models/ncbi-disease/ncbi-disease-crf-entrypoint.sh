@@ -19,5 +19,5 @@ envsubst < /home/dev/scripts/properties/ncbi-disease.properties.template > /home
 /home/dev/scripts/crf-performance-to-json.sh disease NCBI_DISEASE /home/dev/crf-performance/ncbidisease.out > /home/dev/crf-performance/ncbidisease_${VERSION}.json
 
 # gsutil the model and the performance data to cloud storage
-gsutil /home/dev/crf-models/ncbidisease-ner-model-${VERSION}.ser.gz gs://translator-text-workflow-dev-public/models/entities/crf/ncbidisease/
-gsutil /home/dev/crf-performance/ncbidisease_${VERSION}.json gs://translator-text-workflow-dev-public/models/entities/crf/ncbidisease/
+gsutil cp /home/dev/crf-models/ncbidisease-ner-model-${VERSION}.ser.gz gs://translator-text-workflow-dev-public/models/entities/crf/ncbidisease/
+gsutil cp /home/dev/crf-performance/ncbidisease_${VERSION}.json gs://translator-text-workflow-dev-public/models/entities/crf/ncbidisease/
