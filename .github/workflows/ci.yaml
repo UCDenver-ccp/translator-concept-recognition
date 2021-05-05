@@ -82,7 +82,7 @@ jobs:
       #   run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
       - name: Submit job to build model to AI-Platform
         run: |-
-          gcloud ai-platform jobs submit training "build-ncbi-disease-crf" \
+          gcloud ai-platform jobs submit training "build_ncbi_disease_crf_$GITHUB_SHA" \
             --scale-tier basic --master-machine-type "$GCE_MACHINE_TYPE" --region "$GCE_REGION" \
             --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
        
