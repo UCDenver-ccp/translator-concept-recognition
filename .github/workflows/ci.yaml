@@ -64,7 +64,7 @@ jobs:
       DOCKERFILE: build-crf-models/ncbi-disease.crf.Dockerfile
       GCE_MACHINE_TYPE: n1-highmem-16
       GCE_REGION: us-central1
-      SHA8: ${GITHUB_SHA::8}
+      SHA8: "$GITHUB_SHA"
     steps:
       - uses: actions/checkout@v2
       - name: Set up Cloud SDK
