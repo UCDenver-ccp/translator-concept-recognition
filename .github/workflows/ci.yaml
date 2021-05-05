@@ -95,7 +95,7 @@ jobs:
     name: Test gsutil
     env:
       IMAGE_NAME: test-gsutil
-      DOCKERFILE: build-crf-models/gsutil-test.crf.Dockerfile
+      DOCKERFILE: build-crf-models/gsutil-test.Dockerfile
       GCE_MACHINE_TYPE: n1-highmem-16
       GCE_REGION: us-central1
     steps:
