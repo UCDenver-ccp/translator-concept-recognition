@@ -33,6 +33,6 @@ COPY scripts-crf-models/ncbi-disease /home/dev/scripts
 # Give ownership to the dev user
 RUN chown -R dev:dev /home/dev
 USER dev
-RUN chmod 755 home/dev/scripts/gsutil-test-entrypoint.sh
+RUN chmod 755 /home/dev/scripts/gsutil-test-entrypoint.sh
 
 ENTRYPOINT ["/home/dev/scripts/gsutil-test-entrypoint.sh"]
