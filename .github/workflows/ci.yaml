@@ -110,10 +110,7 @@ jobs:
       - name: Set MODEL_VERSION env
         run: echo "MODEL_VERSION=$(grep 'DISEASE.NCBIDISEASE' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
       - name: Set model-specific environment variables
-        run: |-
-          while read line; do \
-             echo "$line" >> $GITHUB_ENV \
-          done < ${ENV_FILE}
+        run: while read line; do echo "$line" >> $GITHUB_ENV done < ${ENV_FILE}
       - name: Build Docker Image
         run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" --build-arg MODEL_KEY_ARG=${MODEL_KEY} --build-arg MODEL_FILE_PREFIX_ARG=${MODEL_FILE_PREFIX} .
       - name: Publish Docker Image to Google Container Registry
