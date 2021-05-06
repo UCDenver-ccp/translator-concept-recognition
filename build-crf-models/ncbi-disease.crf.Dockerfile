@@ -19,9 +19,6 @@ RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.
     curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key --keyring /usr/share/keyrings/cloud.google.gpg add - && \
     apt-get update && apt-get install -y google-cloud-sdk
 
-# Make sure gsutil will use the default service account
-#RUN echo ‘[GoogleCompute]\nservice_account = default’ > /etc/boto.cfg
-
 # Create the dev user
 RUN groupadd --gid 9001 dev && \
     useradd --create-home --shell /bin/bash --no-log-init -u 9001 -g dev dev

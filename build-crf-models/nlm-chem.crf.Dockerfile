@@ -8,8 +8,18 @@ RUN apt-get update && apt-get install -y \
     wget \
     jq \
     unzip \
-    gettext
+    gettext \
+    apt-transport-https \
+    ca-certificates \
+    gnupg \
+    curl 
 
+# Install the Google Cloud SDK
+RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
+    curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key --keyring /usr/share/keyrings/cloud.google.gpg add - && \
+    apt-get update && apt-get install -y google-cloud-sdk
+
+# Create the dev user
 RUN groupadd --gid 9001 dev && \
     useradd --create-home --shell /bin/bash --no-log-init -u 9001 -g dev dev
     
