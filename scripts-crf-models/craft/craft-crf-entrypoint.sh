@@ -18,5 +18,8 @@ envsubst < /home/dev/scripts/properties/${ONT}.properties.template > /home/dev/s
 /home/dev/scripts/test.sh ${ONT} 2> /home/dev/crf-performance/${ONT}.craft.out 
 
 # generate the JSON snippet that contains the evaluation metrics
-/home/dev/scripts/crf-performance-to-json.sh ${ONT} CRAFT /home/dev/crf-performance/${ONT}.craft.out > /home/dev/crf-performance/${ONT}.craft.json
+/home/dev/scripts/crf-performance-to-json.sh ${ONT} CRAFT /home/dev/crf-performance/${ONT}.craft.out > /home/dev/crf-performance/${ONT,,}.craft_${VERSION}.json
 
+# gsutil the model and the performance data to cloud storage
+gsutil cp /home/dev/crf-models/${ONT,,}-ner-model-${VERSION}.ser.gz gs://translator-text-workflow-dev-public/models/entities/crf/craft/${ONT,,}/
+gsutil cp /home/dev/crf-performance/${ONT,,}.craft_${VERSION}.json gs://translator-text-workflow-dev-public/models/entities/crf/craft/${ONT,,}/

@@ -80,11 +80,11 @@ jobs:
   #       run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
   #     - name: Submit job to build model to AI-Platform
   #       run: |-
-  #         gcloud ai-platform jobs submit training "$IMAGE_NAME_$GITHUB_SHA" \
+  #         gcloud ai-platform jobs submit training "$IMAGE_NAME$GITHUB_SHA" \
   #           --scale-tier basic --region "$GCE_REGION" \
   #           --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
   #     - name: Monitor the training job
-  #       run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME_$GITHUB_SHA"
+  #       run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME$GITHUB_SHA"
        
 
   # build-crf-service-container-ncbi-disease:
@@ -150,11 +150,11 @@ jobs:
   #       run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
   #     - name: Submit job to build model to AI-Platform
   #       run: |-
-  #         gcloud ai-platform jobs submit training "$IMAGE_NAME_$GITHUB_SHA" \
+  #         gcloud ai-platform jobs submit training "$IMAGE_NAME$GITHUB_SHA" \
   #           --scale-tier basic --region "$GCE_REGION" \
   #           --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
   #     - name: Monitor the training job
-  #       run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME_$GITHUB_SHA"
+  #       run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME$GITHUB_SHA"
        
 
   # build-crf-service-container-nlm-chem:
@@ -186,14 +186,79 @@ jobs:
   #       run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
 
 
-  build-and-publish-crf-model-human-phenotype:
+  # build-and-publish-crf-model-human-phenotype:
+  #   runs-on: ubuntu-latest
+  #   # needs: ci
+  #   # if: needs.check-need-to-build-crf-model-human-phenotype.outputs.status == 'success'
+  #   name: Build & publish Human Phenotype CRF model
+  #   env:
+  #     IMAGE_NAME: build_crf_model_human_phenotype
+  #     DOCKERFILE: build-crf-models/human-phenotype.crf.Dockerfile
+  #     GCE_REGION: us-central1
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Set up Cloud SDK
+  #       uses: google-github-actions/setup-gcloud@master
+  #       with:
+  #         project_id: ${{ secrets.GCE_PROJECT }}
+  #         service_account_key: ${{ secrets.GCE_SA_KEY }}
+  #         version: '290.0.1'
+  #     - name: Configure Docker Authentication
+  #       run: gcloud --quiet auth configure-docker
+  #     - name: Set MODEL_VERSION env
+  #       run: echo "MODEL_VERSION=$(grep 'PHENOTYPE.HPO' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
+  #     - name: Build Docker Image
+  #       run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" .
+  #     - name: Publish Docker Image to Google Container Registry
+  #       run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
+  #     - name: Submit job to build model to AI-Platform
+  #       run: |-
+  #         gcloud ai-platform jobs submit training "$IMAGE_NAME$GITHUB_SHA" \
+  #           --scale-tier basic --region "$GCE_REGION" \
+  #           --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
+  #     - name: Monitor the training job
+  #       run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME$GITHUB_SHA"
+        
+
+  # build-crf-service-container-human-phenotype:
+  #   runs-on: ubuntu-latest
+  #   needs: build-and-publish-crf-model-human-phenotype
+  #   name: Build container to host human-phenotype CRF service
+  #   env:
+  #     IMAGE_NAME: crf_service_human_phenotype
+  #     ENV_FILE: build-crf-services/human-phenotype.env
+  #     DOCKERFILE: build-crf-services/crf-service.Dockerfile
+  #     GCE_REGION: us-central1
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Set up Cloud SDK
+  #       uses: google-github-actions/setup-gcloud@master
+  #       with:
+  #         project_id: ${{ secrets.GCE_PROJECT }}
+  #         service_account_key: ${{ secrets.GCE_SA_KEY }}
+  #         version: '290.0.1'
+  #     - name: Configure Docker Authentication
+  #       run: gcloud --quiet auth configure-docker
+  #     - name: Set MODEL_VERSION env
+  #       run: echo "MODEL_VERSION=$(grep 'PHENOTYPE.HPO' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
+  #     - name: Set model-specific environment variables
+  #       run: while read line; do echo "$line" >> $GITHUB_ENV ; done < ${ENV_FILE}
+  #     - name: Build Docker Image
+  #       run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" --build-arg MODEL_KEY_ARG=$MODEL_KEY --build-arg MODEL_FILE_PREFIX_ARG=$PROJECT_ID$MODEL_FILE_PREFIX --build-arg MODEL_VERSION_ARG=$MODEL_VERSION .
+  #     - name: Publish Docker Image to Google Container Registry
+  #       run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
+  
+
+  # CHEBI
+  build-and-publish-crf-model-craft-chebi:
     runs-on: ubuntu-latest
     # needs: ci
-    # if: needs.check-need-to-build-crf-model-human-phenotype.outputs.status == 'success'
-    name: Build & publish Human Phenotype CRF model
+    # if: needs.check-need-to-build-crf-model-craft-chebi.outputs.status == 'success'
+    name: Build & publish CRAFT CHEBI CRF model
     env:
-      IMAGE_NAME: build_crf_model_human_phenotype
-      DOCKERFILE: build-crf-models/human-phenotype.crf.Dockerfile
+      ONT: CHEBI
+      IMAGE_NAME: build_crf_model_craft_chebi
+      DOCKERFILE: build-crf-models/craft.crf.Dockerfile
       GCE_REGION: us-central1
     steps:
       - uses: actions/checkout@v2
@@ -206,31 +271,28 @@ jobs:
       - name: Configure Docker Authentication
         run: gcloud --quiet auth configure-docker
       - name: Set MODEL_VERSION env
-        run: echo "MODEL_VERSION=$(grep 'PHENOTYPE.HPO' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
-      # - name: Build Docker Image
-      #   run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" .
-      # - name: Publish Docker Image to Google Container Registry
-      #   run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
-      - name: Output envs 1
-        run: echo "IMAGE_NAME -- $IMAGE_NAME"
-      - name: Output envs 2
-        run: echo "GITHUB_SHA -- $GITHUB_SHA"
+        run: echo "MODEL_VERSION=$(grep 'CHEBI.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
+      - name: Build Docker Image
+        run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" .
+      - name: Publish Docker Image to Google Container Registry
+        run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
       - name: Submit job to build model to AI-Platform
         run: |-
           gcloud ai-platform jobs submit training "$IMAGE_NAME$GITHUB_SHA" \
             --scale-tier basic --region "$GCE_REGION" \
-            --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
+            --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" \
+            -- "${ONT}"
       - name: Monitor the training job
         run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME$GITHUB_SHA"
         
 
-  build-crf-service-container-human-phenotype:
+  build-crf-service-container-craft-chebi:
     runs-on: ubuntu-latest
-    needs: build-and-publish-crf-model-human-phenotype
-    name: Build container to host human-phenotype CRF service
+    needs: build-and-publish-crf-model-craft-chebi
+    name: Build container to host craft-chebi CRF service
     env:
-      IMAGE_NAME: crf_service_human_phenotype
-      ENV_FILE: build-crf-services/human-phenotype.env
+      IMAGE_NAME: crf_service_craft_chebi
+      ENV_FILE: build-crf-services/craft-chebi.env
       DOCKERFILE: build-crf-services/crf-service.Dockerfile
       GCE_REGION: us-central1
     steps:
@@ -244,79 +306,13 @@ jobs:
       - name: Configure Docker Authentication
         run: gcloud --quiet auth configure-docker
       - name: Set MODEL_VERSION env
-        run: echo "MODEL_VERSION=$(grep 'PHENOTYPE.HPO' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
+        run: echo "MODEL_VERSION=$(grep 'CHEBI.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
       - name: Set model-specific environment variables
         run: while read line; do echo "$line" >> $GITHUB_ENV ; done < ${ENV_FILE}
       - name: Build Docker Image
         run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" --build-arg MODEL_KEY_ARG=$MODEL_KEY --build-arg MODEL_FILE_PREFIX_ARG=$PROJECT_ID$MODEL_FILE_PREFIX --build-arg MODEL_VERSION_ARG=$MODEL_VERSION .
       - name: Publish Docker Image to Google Container Registry
         run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
-  
-
-#   # CHEBI
-#   build-and-publish-crf-model-craft-chebi:
-#     runs-on: ubuntu-latest
-#     # needs: ci
-#     # if: needs.check-need-to-build-crf-model-craft-chebi.outputs.status == 'success'
-#     name: Build & publish CRAFT CHEBI CRF model
-#     env:
-#       ONT: CHEBI
-#       IMAGE_NAME: build_crf_model_craft_chebi
-#       DOCKERFILE: build-crf-models/craft.crf.Dockerfile
-#       GCE_REGION: us-central1
-#     steps:
-#       - uses: actions/checkout@v2
-#       - name: Set up Cloud SDK
-#         uses: google-github-actions/setup-gcloud@master
-#         with:
-#           project_id: ${{ secrets.GCE_PROJECT }}
-#           service_account_key: ${{ secrets.GCE_SA_KEY }}
-#           version: '290.0.1'
-#       - name: Configure Docker Authentication
-#         run: gcloud --quiet auth configure-docker
-#       - name: Set MODEL_VERSION env
-#         run: echo "MODEL_VERSION=$(grep 'CHEBI.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
-#       - name: Build Docker Image
-#         run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" .
-#       - name: Publish Docker Image to Google Container Registry
-#         run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
-#       - name: Submit job to build model to AI-Platform
-#         run: |-
-#           gcloud ai-platform jobs submit training "$IMAGE_NAME_$GITHUB_SHA" \
-#             --scale-tier basic --region "$GCE_REGION" \
-#             --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" \
-#             -- "${ONT}"
-#       - name: Monitor the training job
-#         run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME_$GITHUB_SHA"
-        
-
-#   build-crf-service-container-craft-chebi:
-#     runs-on: ubuntu-latest
-#     needs: build-and-publish-crf-model-craft-chebi
-#     name: Build container to host craft-chebi CRF service
-#     env:
-#       IMAGE_NAME: crf_service_craft_chebi
-#       ENV_FILE: build-crf-services/craft-chebi.env
-#       DOCKERFILE: build-crf-services/crf-service.Dockerfile
-#       GCE_REGION: us-central1
-#     steps:
-#       - uses: actions/checkout@v2
-#       - name: Set up Cloud SDK
-#         uses: google-github-actions/setup-gcloud@master
-#         with:
-#           project_id: ${{ secrets.GCE_PROJECT }}
-#           service_account_key: ${{ secrets.GCE_SA_KEY }}
-#           version: '290.0.1'
-#       - name: Configure Docker Authentication
-#         run: gcloud --quiet auth configure-docker
-#       - name: Set MODEL_VERSION env
-#         run: echo "MODEL_VERSION=$(grep 'CHEBI.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
-#       - name: Set model-specific environment variables
-#         run: while read line; do echo "$line" >> $GITHUB_ENV ; done < ${ENV_FILE}
-#       - name: Build Docker Image
-#         run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" --build-arg MODEL_KEY_ARG=$MODEL_KEY --build-arg MODEL_FILE_PREFIX_ARG=$PROJECT_ID$MODEL_FILE_PREFIX --build-arg MODEL_VERSION_ARG=$MODEL_VERSION .
-#       - name: Publish Docker Image to Google Container Registry
-#         run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
 
 
 
@@ -350,12 +346,12 @@ jobs:
 #         run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
 #       - name: Submit job to build model to AI-Platform
 #         run: |-
-#           gcloud ai-platform jobs submit training "$IMAGE_NAME_$GITHUB_SHA" \
+#           gcloud ai-platform jobs submit training "$IMAGE_NAME$GITHUB_SHA" \
 #             --scale-tier basic --region "$GCE_REGION" \
 #             --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" \
 #             -- "${ONT}"
 #       - name: Monitor the training job
-#         run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME_$GITHUB_SHA"
+#         run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME$GITHUB_SHA"
         
 
 # build-crf-service-container-craft-cl:
@@ -417,12 +413,12 @@ jobs:
 #       run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
 #     - name: Submit job to build model to AI-Platform
 #       run: |-
-#         gcloud ai-platform jobs submit training "$IMAGE_NAME_$GITHUB_SHA" \
+#         gcloud ai-platform jobs submit training "$IMAGE_NAME$GITHUB_SHA" \
 #           --scale-tier basic --region "$GCE_REGION" \
 #           --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" \
 #           -- "${ONT}"
 #     - name: Monitor the training job
-#       run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME_$GITHUB_SHA"
+#       run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME$GITHUB_SHA"
       
 
 # build-crf-service-container-craft-go_bp:
@@ -482,12 +478,12 @@ jobs:
 #       run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
 #     - name: Submit job to build model to AI-Platform
 #       run: |-
-#         gcloud ai-platform jobs submit training "$IMAGE_NAME_$GITHUB_SHA" \
+#         gcloud ai-platform jobs submit training "$IMAGE_NAME$GITHUB_SHA" \
 #           --scale-tier basic --region "$GCE_REGION" \
 #           --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" \
 #           -- "${ONT}"
 #     - name: Monitor the training job
-#       run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME_$GITHUB_SHA"
+#       run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME$GITHUB_SHA"
       
 
 # build-crf-service-container-craft-go_cc:
@@ -547,12 +543,12 @@ jobs:
 #       run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
 #     - name: Submit job to build model to AI-Platform
 #       run: |-
-#         gcloud ai-platform jobs submit training "$IMAGE_NAME_$GITHUB_SHA" \
+#         gcloud ai-platform jobs submit training "$IMAGE_NAME$GITHUB_SHA" \
 #           --scale-tier basic --region "$GCE_REGION" \
 #           --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" \
 #           -- "${ONT}"
 #     - name: Monitor the training job
-#       run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME_$GITHUB_SHA"
+#       run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME$GITHUB_SHA"
       
 
 # build-crf-service-container-craft-go_mf:
@@ -612,12 +608,12 @@ jobs:
 #       run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
 #     - name: Submit job to build model to AI-Platform
 #       run: |-
-#         gcloud ai-platform jobs submit training "$IMAGE_NAME_$GITHUB_SHA" \
+#         gcloud ai-platform jobs submit training "$IMAGE_NAME$GITHUB_SHA" \
 #           --scale-tier basic --region "$GCE_REGION" \
 #           --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" \
 #           -- "${ONT}"
 #     - name: Monitor the training job
-#       run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME_$GITHUB_SHA"
+#       run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME$GITHUB_SHA"
       
 
 # build-crf-service-container-craft-mop:
@@ -677,12 +673,12 @@ jobs:
 #       run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
 #     - name: Submit job to build model to AI-Platform
 #       run: |-
-#         gcloud ai-platform jobs submit training "$IMAGE_NAME_$GITHUB_SHA" \
+#         gcloud ai-platform jobs submit training "$IMAGE_NAME$GITHUB_SHA" \
 #           --scale-tier basic --region "$GCE_REGION" \
 #           --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" \
 #           -- "${ONT}"
 #     - name: Monitor the training job
-#       run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME_$GITHUB_SHA"
+#       run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME$GITHUB_SHA"
       
 
 # build-crf-service-container-craft-ncbitaxon:
@@ -742,12 +738,12 @@ jobs:
 #       run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
 #     - name: Submit job to build model to AI-Platform
 #       run: |-
-#         gcloud ai-platform jobs submit training "$IMAGE_NAME_$GITHUB_SHA" \
+#         gcloud ai-platform jobs submit training "$IMAGE_NAME$GITHUB_SHA" \
 #           --scale-tier basic --region "$GCE_REGION" \
 #           --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" \
 #           -- "${ONT}"
 #     - name: Monitor the training job
-#       run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME_$GITHUB_SHA"
+#       run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME$GITHUB_SHA"
       
 
 # build-crf-service-container-craft-pr:
@@ -807,12 +803,12 @@ jobs:
 #       run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
 #     - name: Submit job to build model to AI-Platform
 #       run: |-
-#         gcloud ai-platform jobs submit training "$IMAGE_NAME_$GITHUB_SHA" \
+#         gcloud ai-platform jobs submit training "$IMAGE_NAME$GITHUB_SHA" \
 #           --scale-tier basic --region "$GCE_REGION" \
 #           --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" \
 #           -- "${ONT}"
 #     - name: Monitor the training job
-#       run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME_$GITHUB_SHA"
+#       run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME$GITHUB_SHA"
       
 
 # build-crf-service-container-craft-so:
@@ -872,12 +868,12 @@ jobs:
 #       run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
 #     - name: Submit job to build model to AI-Platform
 #       run: |-
-#         gcloud ai-platform jobs submit training "$IMAGE_NAME_$GITHUB_SHA" \
+#         gcloud ai-platform jobs submit training "$IMAGE_NAME$GITHUB_SHA" \
 #           --scale-tier basic --region "$GCE_REGION" \
 #           --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" \
 #           -- "${ONT}"
 #     - name: Monitor the training job
-#       run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME_$GITHUB_SHA"
+#       run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME$GITHUB_SHA"
       
 
 # build-crf-service-container-craft-uberon:
