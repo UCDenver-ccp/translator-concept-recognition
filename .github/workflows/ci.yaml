@@ -211,6 +211,10 @@ jobs:
         run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" .
       - name: Publish Docker Image to Google Container Registry
         run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
+      - name: Output envs 1
+        run: echo "IMAGE_NAME -- $IMAGE_NAME"
+      - name: Output envs 2
+        run: echo "GITHUB_SHA -- $GITHUB_SHA"
       - name: Submit job to build model to AI-Platform
         run: |-
           gcloud ai-platform jobs submit training "$IMAGE_NAME_$GITHUB_SHA" \
@@ -257,7 +261,7 @@ jobs:
 #     name: Build & publish CRAFT CHEBI CRF model
 #     env:
 #       ONT: CHEBI
-#       IMAGE_NAME: build-crf-model-craft-chebi
+#       IMAGE_NAME: build_crf_model_craft_chebi
 #       DOCKERFILE: build-crf-models/craft.crf.Dockerfile
 #       GCE_REGION: us-central1
 #     steps:
@@ -291,7 +295,7 @@ jobs:
 #     needs: build-and-publish-crf-model-craft-chebi
 #     name: Build container to host craft-chebi CRF service
 #     env:
-#       IMAGE_NAME: crf-service-craft-chebi
+#       IMAGE_NAME: crf_service_craft_chebi
 #       ENV_FILE: build-crf-services/craft-chebi.env
 #       DOCKERFILE: build-crf-services/crf-service.Dockerfile
 #       GCE_REGION: us-central1
@@ -325,7 +329,7 @@ jobs:
 #     name: Build & publish CRAFT CL CRF model
 #     env:
 #       ONT: CL
-#       IMAGE_NAME: build-crf-model-craft-cl
+#       IMAGE_NAME: build_crf_model_craft_cl
 #       DOCKERFILE: build-crf-models/craft.crf.Dockerfile
 #       GCE_REGION: us-central1
 #     steps:
@@ -359,7 +363,7 @@ jobs:
 #   needs: build-and-publish-crf-model-craft-cl
 #   name: Build container to host craft-cl CRF service
 #   env:
-#     IMAGE_NAME: crf-service-craft-cl
+#     IMAGE_NAME: crf_service_craft_cl
 #     ENV_FILE: build-crf-services/craft-cl.env
 #     DOCKERFILE: build-crf-services/crf-service.Dockerfile
 #     GCE_REGION: us-central1
@@ -392,7 +396,7 @@ jobs:
 #   name: Build & publish CRAFT GO_BP CRF model
 #   env:
 #     ONT: GO_BP
-#     IMAGE_NAME: build-crf-model-craft-go_bp
+#     IMAGE_NAME: build_crf_model_craft_go_bp
 #     DOCKERFILE: build-crf-models/craft.crf.Dockerfile
 #     GCE_REGION: us-central1
 #   steps:
@@ -426,7 +430,7 @@ jobs:
 # needs: build-and-publish-crf-model-craft-go_bp
 # name: Build container to host craft-go_bp CRF service
 # env:
-#   IMAGE_NAME: crf-service-craft-go_bp
+#   IMAGE_NAME: crf_service_craft_go_bp
 #   ENV_FILE: build-crf-services/craft-go_bp.env
 #   DOCKERFILE: build-crf-services/crf-service.Dockerfile
 #   GCE_REGION: us-central1
@@ -457,7 +461,7 @@ jobs:
 #   name: Build & publish CRAFT GO_CC CRF model
 #   env:
 #     ONT: GO_CC
-#     IMAGE_NAME: build-crf-model-craft-go_cc
+#     IMAGE_NAME: build_crf_model_craft_go_cc
 #     DOCKERFILE: build-crf-models/craft.crf.Dockerfile
 #     GCE_REGION: us-central1
 #   steps:
@@ -491,7 +495,7 @@ jobs:
 # needs: build-and-publish-crf-model-craft-go_cc
 # name: Build container to host craft-go_cc CRF service
 # env:
-#   IMAGE_NAME: crf-service-craft-go_cc
+#   IMAGE_NAME: crf_service_craft_go_cc
 #   ENV_FILE: build-crf-services/craft-go_cc.env
 #   DOCKERFILE: build-crf-services/crf-service.Dockerfile
 #   GCE_REGION: us-central1
@@ -522,7 +526,7 @@ jobs:
 #   name: Build & publish CRAFT GO_MF CRF model
 #   env:
 #     ONT: GO_MF
-#     IMAGE_NAME: build-crf-model-craft-go_mf
+#     IMAGE_NAME: build_crf_model_craft_go_mf
 #     DOCKERFILE: build-crf-models/craft.crf.Dockerfile
 #     GCE_REGION: us-central1
 #   steps:
@@ -556,7 +560,7 @@ jobs:
 # needs: build-and-publish-crf-model-craft-go_mf
 # name: Build container to host craft-go_mf CRF service
 # env:
-#   IMAGE_NAME: crf-service-craft-go_mf
+#   IMAGE_NAME: crf_service_craft_go_mf
 #   ENV_FILE: build-crf-services/craft-go_mf.env
 #   DOCKERFILE: build-crf-services/crf-service.Dockerfile
 #   GCE_REGION: us-central1
@@ -587,7 +591,7 @@ jobs:
 #   name: Build & publish CRAFT MOP CRF model
 #   env:
 #     ONT: MOP
-#     IMAGE_NAME: build-crf-model-craft-mop
+#     IMAGE_NAME: build_crf_model_craft_mop
 #     DOCKERFILE: build-crf-models/craft.crf.Dockerfile
 #     GCE_REGION: us-central1
 #   steps:
@@ -621,7 +625,7 @@ jobs:
 # needs: build-and-publish-crf-model-craft-mop
 # name: Build container to host craft-mop CRF service
 # env:
-#   IMAGE_NAME: crf-service-craft-mop
+#   IMAGE_NAME: crf_service_craft_mop
 #   ENV_FILE: build-crf-services/craft-mop.env
 #   DOCKERFILE: build-crf-services/crf-service.Dockerfile
 #   GCE_REGION: us-central1
@@ -652,7 +656,7 @@ jobs:
 #   name: Build & publish CRAFT NCBITAXON CRF model
 #   env:
 #     ONT: NCBITAXON
-#     IMAGE_NAME: build-crf-model-craft-ncbitaxon
+#     IMAGE_NAME: build_crf_model_craft_ncbitaxon
 #     DOCKERFILE: build-crf-models/craft.crf.Dockerfile
 #     GCE_REGION: us-central1
 #   steps:
@@ -686,7 +690,7 @@ jobs:
 # needs: build-and-publish-crf-model-craft-ncbitaxon
 # name: Build container to host craft-ncbitaxon CRF service
 # env:
-#   IMAGE_NAME: crf-service-craft-ncbitaxon
+#   IMAGE_NAME: crf_service_craft_ncbitaxon
 #   ENV_FILE: build-crf-services/craft-ncbitaxon.env
 #   DOCKERFILE: build-crf-services/crf-service.Dockerfile
 #   GCE_REGION: us-central1
@@ -717,7 +721,7 @@ jobs:
 #   name: Build & publish CRAFT PR CRF model
 #   env:
 #     ONT: PR
-#     IMAGE_NAME: build-crf-model-craft-pr
+#     IMAGE_NAME: build_crf_model_craft_pr
 #     DOCKERFILE: build-crf-models/craft.crf.Dockerfile
 #     GCE_REGION: us-central1
 #   steps:
@@ -751,7 +755,7 @@ jobs:
 # needs: build-and-publish-crf-model-craft-pr
 # name: Build container to host craft-pr CRF service
 # env:
-#   IMAGE_NAME: crf-service-craft-pr
+#   IMAGE_NAME: crf_service_craft_pr
 #   ENV_FILE: build-crf-services/craft-pr.env
 #   DOCKERFILE: build-crf-services/crf-service.Dockerfile
 #   GCE_REGION: us-central1
@@ -782,7 +786,7 @@ jobs:
 #   name: Build & publish CRAFT SO CRF model
 #   env:
 #     ONT: SO
-#     IMAGE_NAME: build-crf-model-craft-so
+#     IMAGE_NAME: build_crf_model_craft_so
 #     DOCKERFILE: build-crf-models/craft.crf.Dockerfile
 #     GCE_REGION: us-central1
 #   steps:
@@ -816,7 +820,7 @@ jobs:
 # needs: build-and-publish-crf-model-craft-so
 # name: Build container to host craft-so CRF service
 # env:
-#   IMAGE_NAME: crf-service-craft-so
+#   IMAGE_NAME: crf_service_craft_so
 #   ENV_FILE: build-crf-services/craft-so.env
 #   DOCKERFILE: build-crf-services/crf-service.Dockerfile
 #   GCE_REGION: us-central1
@@ -847,7 +851,7 @@ jobs:
 #   name: Build & publish CRAFT UBERON CRF model
 #   env:
 #     ONT: UBERON
-#     IMAGE_NAME: build-crf-model-craft-uberon
+#     IMAGE_NAME: build_crf_model_craft_uberon
 #     DOCKERFILE: build-crf-models/craft.crf.Dockerfile
 #     GCE_REGION: us-central1
 #   steps:
@@ -881,7 +885,7 @@ jobs:
 # needs: build-and-publish-crf-model-craft-uberon
 # name: Build container to host craft-uberon CRF service
 # env:
-#   IMAGE_NAME: crf-service-craft-uberon
+#   IMAGE_NAME: crf_service_craft_uberon
 #   ENV_FILE: build-crf-services/craft-uberon.env
 #   DOCKERFILE: build-crf-services/crf-service.Dockerfile
 #   GCE_REGION: us-central1
