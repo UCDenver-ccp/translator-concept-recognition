@@ -249,46 +249,46 @@ jobs:
   #       run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
   
 
-  # # CHEBI
-  # build-and-publish-crf-model-craft-chebi:
-  #   runs-on: ubuntu-latest
-  #   # needs: ci
-  #   # if: needs.check-need-to-build-crf-model-craft-chebi.outputs.status == 'success'
-  #   name: Build & publish CRAFT CHEBI CRF model
-  #   env:
-  #     ONT: CHEBI
-  #     IMAGE_NAME: build_crf_model_craft_chebi
-  #     DOCKERFILE: build-crf-models/craft.crf.Dockerfile
-  #     GCE_REGION: us-central1
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Set up Cloud SDK
-  #       uses: google-github-actions/setup-gcloud@master
-  #       with:
-  #         project_id: ${{ secrets.GCE_PROJECT }}
-  #         service_account_key: ${{ secrets.GCE_SA_KEY }}
-  #         version: '290.0.1'
-  #     - name: Configure Docker Authentication
-  #       run: gcloud --quiet auth configure-docker
-  #     - name: Set MODEL_VERSION env
-  #       run: echo "MODEL_VERSION=$(grep 'CHEBI.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
-  #     - name: Build Docker Image
-  #       run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" .
-  #     - name: Publish Docker Image to Google Container Registry
-  #       run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
-  #     - name: Submit job to build model to AI-Platform
-  #       run: |-
-  #         gcloud ai-platform jobs submit training "$IMAGE_NAME$GITHUB_SHA" \
-  #           --scale-tier basic --region "$GCE_REGION" \
-  #           --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" \
-  #           -- "${ONT}"
-  #     - name: Monitor the training job
-  #       run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME$GITHUB_SHA"
+  # CHEBI
+  build-and-publish-crf-model-craft-chebi:
+    runs-on: ubuntu-latest
+    # needs: ci
+    # if: needs.check-need-to-build-crf-model-craft-chebi.outputs.status == 'success'
+    name: Build & publish CRAFT CHEBI CRF model
+    env:
+      ONT: CHEBI
+      IMAGE_NAME: build_crf_model_craft_chebi
+      DOCKERFILE: build-crf-models/craft.crf.Dockerfile
+      GCE_REGION: us-central1
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@master
+        with:
+          project_id: ${{ secrets.GCE_PROJECT }}
+          service_account_key: ${{ secrets.GCE_SA_KEY }}
+          version: '290.0.1'
+      - name: Configure Docker Authentication
+        run: gcloud --quiet auth configure-docker
+      - name: Set MODEL_VERSION env
+        run: echo "MODEL_VERSION=$(grep 'CHEBI.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
+      - name: Build Docker Image
+        run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" .
+      - name: Publish Docker Image to Google Container Registry
+        run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
+      - name: Submit job to build model to AI-Platform
+        run: |-
+          gcloud ai-platform jobs submit training "$IMAGE_NAME$GITHUB_SHA" \
+            --scale-tier basic --region "$GCE_REGION" \
+            --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" \
+            -- "${ONT}"
+      - name: Monitor the training job
+        run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME$GITHUB_SHA"
         
 
   build-crf-service-container-craft-chebi:
     runs-on: ubuntu-latest
-    # needs: build-and-publish-crf-model-craft-chebi
+    needs: build-and-publish-crf-model-craft-chebi
     name: Build container to host craft-chebi CRF service
     env:
       IMAGE_NAME: crf_service_craft_chebi
