@@ -123,14 +123,77 @@ jobs:
 
 
 
-  build-and-publish-crf-model-nlm-chem:
+  # build-and-publish-crf-model-nlm-chem:
+  #   runs-on: ubuntu-latest
+  #   # needs: ci
+  #   # if: needs.check-need-to-build-crf-model-nlm-chem.outputs.status == 'success'
+  #   name: Build & publish Chemical CRF model
+  #   env:
+  #     IMAGE_NAME: build-crf-model-nlm-chem
+  #     DOCKERFILE: build-crf-models/nlm-chem.crf.Dockerfile
+  #     GCE_REGION: us-central1
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Set up Cloud SDK
+  #       uses: google-github-actions/setup-gcloud@master
+  #       with:
+  #         project_id: ${{ secrets.GCE_PROJECT }}
+  #         service_account_key: ${{ secrets.GCE_SA_KEY }}
+  #         version: '290.0.1'
+  #     - name: Configure Docker Authentication
+  #       run: gcloud --quiet auth configure-docker
+  #     - name: Set MODEL_VERSION env
+  #       run: echo "MODEL_VERSION=$(grep 'CHEMICAL.NLMCHEM' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
+  #     - name: Build Docker Image
+  #       run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" .
+  #     - name: Publish Docker Image to Google Container Registry
+  #       run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
+  #     - name: Submit job to build model to AI-Platform
+  #       run: |-
+  #         gcloud ai-platform jobs submit training "$IMAGE_NAME_$GITHUB_SHA" \
+  #           --scale-tier basic --region "$GCE_REGION" \
+  #           --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
+  #     - name: Monitor the training job
+  #       run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME_$GITHUB_SHA"
+       
+
+  # build-crf-service-container-nlm-chem:
+  #   runs-on: ubuntu-latest
+  #   needs: build-and-publish-crf-model-nlm-chem
+  #   name: Build container to host NLM-Chem CRF service
+  #   env:
+  #     IMAGE_NAME: crf-service-nlm-chem
+  #     ENV_FILE: build-crf-services/nlm-chem.env
+  #     DOCKERFILE: build-crf-services/crf-service.Dockerfile
+  #     GCE_REGION: us-central1
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Set up Cloud SDK
+  #       uses: google-github-actions/setup-gcloud@master
+  #       with:
+  #         project_id: ${{ secrets.GCE_PROJECT }}
+  #         service_account_key: ${{ secrets.GCE_SA_KEY }}
+  #         version: '290.0.1'
+  #     - name: Configure Docker Authentication
+  #       run: gcloud --quiet auth configure-docker
+  #     - name: Set MODEL_VERSION env
+  #       run: echo "MODEL_VERSION=$(grep 'CHEMICAL.NLMCHEM' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
+  #     - name: Set model-specific environment variables
+  #       run: while read line; do echo "$line" >> $GITHUB_ENV ; done < ${ENV_FILE}
+  #     - name: Build Docker Image
+  #       run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" --build-arg MODEL_KEY_ARG=$MODEL_KEY --build-arg MODEL_FILE_PREFIX_ARG=$PROJECT_ID$MODEL_FILE_PREFIX --build-arg MODEL_VERSION_ARG=$MODEL_VERSION .
+  #     - name: Publish Docker Image to Google Container Registry
+  #       run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
+
+
+  build-and-publish-crf-model-human-phenotype:
     runs-on: ubuntu-latest
     # needs: ci
-    # if: needs.check-need-to-build-crf-model-nlm-chem.outputs.status == 'success'
-    name: Build & publish Chemical CRF model
+    # if: needs.check-need-to-build-crf-model-human-phenotype.outputs.status == 'success'
+    name: Build & publish Human Phenotype CRF model
     env:
-      IMAGE_NAME: build-crf-model-nlm-chem
-      DOCKERFILE: build-crf-models/nlm-chem.crf.Dockerfile
+      IMAGE_NAME: build-crf-model-human-phenotype
+      DOCKERFILE: build-crf-models/human-phenotype.crf.Dockerfile
       GCE_REGION: us-central1
     steps:
       - uses: actions/checkout@v2
@@ -143,7 +206,7 @@ jobs:
       - name: Configure Docker Authentication
         run: gcloud --quiet auth configure-docker
       - name: Set MODEL_VERSION env
-        run: echo "MODEL_VERSION=$(grep 'CHEMICAL.NLMCHEM' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
+        run: echo "MODEL_VERSION=$(grep 'PHENOTYPE.HPO' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
       - name: Build Docker Image
         run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" .
       - name: Publish Docker Image to Google Container Registry
@@ -155,15 +218,15 @@ jobs:
             --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
       - name: Monitor the training job
         run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME_$GITHUB_SHA"
-       
+        
 
-  build-crf-service-container-nlm-chem:
+  build-crf-service-container-human-phenotype:
     runs-on: ubuntu-latest
-    needs: build-and-publish-crf-model-nlm-chem
-    name: Build container to host NLM-Chem CRF service
+    needs: build-and-publish-crf-model-human-phenotype
+    name: Build container to host human-phenotype CRF service
     env:
-      IMAGE_NAME: crf-service-nlm-chem
-      ENV_FILE: build-crf-services/nlm-chem.env
+      IMAGE_NAME: crf-service-human-phenotype
+      ENV_FILE: build-crf-services/human-phenotype.env
       DOCKERFILE: build-crf-services/crf-service.Dockerfile
       GCE_REGION: us-central1
     steps:
@@ -177,13 +240,74 @@ jobs:
       - name: Configure Docker Authentication
         run: gcloud --quiet auth configure-docker
       - name: Set MODEL_VERSION env
-        run: echo "MODEL_VERSION=$(grep 'CHEMICAL.NLMCHEM' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
+        run: echo "MODEL_VERSION=$(grep 'PHENOTYPE.HPO' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
       - name: Set model-specific environment variables
         run: while read line; do echo "$line" >> $GITHUB_ENV ; done < ${ENV_FILE}
       - name: Build Docker Image
         run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" --build-arg MODEL_KEY_ARG=$MODEL_KEY --build-arg MODEL_FILE_PREFIX_ARG=$PROJECT_ID$MODEL_FILE_PREFIX --build-arg MODEL_VERSION_ARG=$MODEL_VERSION .
       - name: Publish Docker Image to Google Container Registry
         run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
+  
 
+  # build-and-publish-crf-model-craft-chebi:
+  #   runs-on: ubuntu-latest
+  #   # needs: ci
+  #   # if: needs.check-need-to-build-crf-model-craft-chebi.outputs.status == 'success'
+  #   name: Build & publish Human Phenotype CRF model
+  #   env:
+  #     IMAGE_NAME: build-crf-model-craft-chebi
+  #     DOCKERFILE: build-crf-models/craft-chebi.crf.Dockerfile
+  #     GCE_REGION: us-central1
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Set up Cloud SDK
+  #       uses: google-github-actions/setup-gcloud@master
+  #       with:
+  #         project_id: ${{ secrets.GCE_PROJECT }}
+  #         service_account_key: ${{ secrets.GCE_SA_KEY }}
+  #         version: '290.0.1'
+  #     - name: Configure Docker Authentication
+  #       run: gcloud --quiet auth configure-docker
+  #     - name: Set MODEL_VERSION env
+  #       run: echo "MODEL_VERSION=$(grep 'PHENOTYPE.HPO' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
+  #     - name: Build Docker Image
+  #       run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" .
+  #     - name: Publish Docker Image to Google Container Registry
+  #       run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
+  #     - name: Submit job to build model to AI-Platform
+  #       run: |-
+  #         gcloud ai-platform jobs submit training "$IMAGE_NAME_$GITHUB_SHA" \
+  #           --scale-tier basic --region "$GCE_REGION" \
+  #           --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
+  #     - name: Monitor the training job
+  #       run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME_$GITHUB_SHA"
+        
 
-       
+  # build-crf-service-container-craft-chebi:
+  #   runs-on: ubuntu-latest
+  #   needs: build-and-publish-crf-model-craft-chebi
+  #   name: Build container to host craft-chebi CRF service
+  #   env:
+  #     IMAGE_NAME: crf-service-craft-chebi
+  #     ENV_FILE: build-crf-services/craft-chebi.env
+  #     DOCKERFILE: build-crf-services/crf-service.Dockerfile
+  #     GCE_REGION: us-central1
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Set up Cloud SDK
+  #       uses: google-github-actions/setup-gcloud@master
+  #       with:
+  #         project_id: ${{ secrets.GCE_PROJECT }}
+  #         service_account_key: ${{ secrets.GCE_SA_KEY }}
+  #         version: '290.0.1'
+  #     - name: Configure Docker Authentication
+  #       run: gcloud --quiet auth configure-docker
+  #     - name: Set MODEL_VERSION env
+  #       run: echo "MODEL_VERSION=$(grep 'PHENOTYPE.HPO' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
+  #     - name: Set model-specific environment variables
+  #       run: while read line; do echo "$line" >> $GITHUB_ENV ; done < ${ENV_FILE}
+  #     - name: Build Docker Image
+  #       run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" --build-arg MODEL_KEY_ARG=$MODEL_KEY --build-arg MODEL_FILE_PREFIX_ARG=$PROJECT_ID$MODEL_FILE_PREFIX --build-arg MODEL_VERSION_ARG=$MODEL_VERSION .
+  #     - name: Publish Docker Image to Google Container Registry
+  #       run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
+               

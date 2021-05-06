@@ -16,5 +16,8 @@ envsubst < /home/dev/scripts/properties/hp.properties.template > /home/dev/scrip
 /home/dev/scripts/test.sh 2> /home/dev/crf-performance/phenotype.out 
 
 # generate the JSON snippet that contains the evaluation metrics
-/home/dev/scripts/crf-performance-to-json.sh hp LOBO_ET_AL /home/dev/crf-performance/phenotype.out > /home/dev/crf-performance/phenotype.json
+/home/dev/scripts/crf-performance-to-json.sh hp LOBO_ET_AL /home/dev/crf-performance/phenotype.out > /home/dev/crf-performance/phenotype_${VERSION}.json
 
+# gsutil the model and the performance data to cloud storage
+gsutil cp /home/dev/crf-models/hpo-ner-model-${VERSION}.ser.gz gs://translator-text-workflow-dev-public/models/entities/crf/human-phenotype/
+gsutil cp /home/dev/crf-performance/phenotype_${VERSION}.json gs://translator-text-workflow-dev-public/models/entities/crf/human-phenotype/

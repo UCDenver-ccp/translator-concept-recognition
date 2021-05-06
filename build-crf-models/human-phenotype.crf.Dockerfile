@@ -25,7 +25,7 @@ RUN groupadd --gid 9001 dev && \
     
 WORKDIR /home/dev/corpus
 
-# Download the NLM Disease corpus
+# Download the HPO corpus
 RUN wget https://github.com/lasigeBioTM/IHP/raw/master/GSC%2B.rar && \
     unrar x GSC+.rar && \
     rm GSC+.rar
