@@ -24,7 +24,8 @@ where,
 * [MODEL_FILE_PREFIX] is a value extracted from the appropriate *.env file for the vocabulary you have selected, e.g. `chebi-craft.env` in the case of our example.
 
 The complete example command to build a CHEBI CRF service container using a pre-computed model is:
-```
+
+```bash
 docker build -t chebi-crf-service:0.1 \
              -f build-crf-services/crf-service.Dockerfile \
              --build-arg MODEL_KEY_ARG=CHEBI.CRAFT \
@@ -36,7 +37,7 @@ docker build -t chebi-crf-service:0.1 \
 
 To run the CRF service (after building the container as described above):
 
-```
+```bash
 docker run -d --name crf-chebi -p 8080:8080 chebi-crf-service:0.1
 ```
 
@@ -44,12 +45,12 @@ docker run -d --name crf-chebi -p 8080:8080 chebi-crf-service:0.1
 
 Once deployed, the service can queried by providing one or more sentences to be processed, e.g.
 
-```
+```bash
 curl -H "Content-type:text/html; charset=UTF-8" -d "12345	T1	sentence 0 55	Chlorine is a chemical entity mentioned in the first sentence of document 12345.
 7890	T1	sentence 0 85	The first sentence in document 7890 also mentions chlorine." http://localhost:8080/crf
 ```
 
-Each sentence must use the following format:
+Each sentence must use the following format: <br>
 document_id `[TAB]` t_id `[TAB]` annotation_type `[SPACE]` sentence_start_offset `[SPACE]` sentence_end_offset `[TAB]` sentence_text
 
 where,
@@ -63,7 +64,7 @@ where,
 ### Results are returned as JSON
 For the query above, the result will look like the following where any identified entity annotations are mapped to their respective document identifier.
 
-```
+```json
 {
   "docIdToBionlpEntityAnnotationsMap": {
     "7890": "T0 ENTITY 50 58    chlorine",
