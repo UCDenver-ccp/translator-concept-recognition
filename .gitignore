@@ -4,3 +4,6 @@ target/
 .settings/
 .DS_Store
 .secrets
+.factorypath
+/.apt_generated/
+/.apt_generated_tests/
