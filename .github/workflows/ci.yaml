@@ -323,592 +323,592 @@ jobs:
 
 
 
-  # CL
-  build-and-publish-crf-model-craft-cl:
-    runs-on: ubuntu-latest
-    # needs: ci
-    # if: needs.check-need-to-build-crf-model-craft-cl.outputs.status == 'success'
-    name: Build & publish CRAFT CL CRF model
-    env:
-      ONT: CL
-      IMAGE_NAME: build_crf_model_craft_cl
-      DOCKERFILE: build-crf-models/craft.crf.Dockerfile
-      GCE_REGION: us-central1
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@master
-        with:
-          project_id: ${{ secrets.GCE_PROJECT }}
-          service_account_key: ${{ secrets.GCE_SA_KEY }}
-          version: '290.0.1'
-      - name: Configure Docker Authentication
-        run: gcloud --quiet auth configure-docker
-      - name: Set MODEL_VERSION env
-        run: echo "MODEL_VERSION=$(grep 'CL.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
-      - name: Build Docker Image
-        run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" .
-      - name: Publish Docker Image to Google Container Registry
-        run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
-      - name: Submit job to build model to AI-Platform
-        run: |-
-          gcloud ai-platform jobs submit training "$IMAGE_NAME$GITHUB_SHA" \
-            --scale-tier basic --region "$GCE_REGION" \
-            --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" \
-            -- "${ONT}"
-      - name: Monitor the training job
-        run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME$GITHUB_SHA"
+  # # CL
+  # build-and-publish-crf-model-craft-cl:
+  #   runs-on: ubuntu-latest
+  #   # needs: ci
+  #   # if: needs.check-need-to-build-crf-model-craft-cl.outputs.status == 'success'
+  #   name: Build & publish CRAFT CL CRF model
+  #   env:
+  #     ONT: CL
+  #     IMAGE_NAME: build_crf_model_craft_cl
+  #     DOCKERFILE: build-crf-models/craft.crf.Dockerfile
+  #     GCE_REGION: us-central1
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Set up Cloud SDK
+  #       uses: google-github-actions/setup-gcloud@master
+  #       with:
+  #         project_id: ${{ secrets.GCE_PROJECT }}
+  #         service_account_key: ${{ secrets.GCE_SA_KEY }}
+  #         version: '290.0.1'
+  #     - name: Configure Docker Authentication
+  #       run: gcloud --quiet auth configure-docker
+  #     - name: Set MODEL_VERSION env
+  #       run: echo "MODEL_VERSION=$(grep 'CL.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
+  #     - name: Build Docker Image
+  #       run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" .
+  #     - name: Publish Docker Image to Google Container Registry
+  #       run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
+  #     - name: Submit job to build model to AI-Platform
+  #       run: |-
+  #         gcloud ai-platform jobs submit training "$IMAGE_NAME$GITHUB_SHA" \
+  #           --scale-tier basic --region "$GCE_REGION" \
+  #           --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" \
+  #           -- "${ONT}"
+  #     - name: Monitor the training job
+  #       run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME$GITHUB_SHA"
         
 
-  build-crf-service-container-craft-cl:
-    runs-on: ubuntu-latest
-    needs: build-and-publish-crf-model-craft-cl
-    name: Build container to host craft-cl CRF service
-    env:
-      IMAGE_NAME: crf_service_craft_cl
-      ENV_FILE: build-crf-services/cl-craft.env
-      DOCKERFILE: build-crf-services/crf-service.Dockerfile
-      GCE_REGION: us-central1
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@master
-        with:
-          project_id: ${{ secrets.GCE_PROJECT }}
-          service_account_key: ${{ secrets.GCE_SA_KEY }}
-          version: '290.0.1'
-      - name: Configure Docker Authentication
-        run: gcloud --quiet auth configure-docker
-      - name: Set MODEL_VERSION env
-        run: echo "MODEL_VERSION=$(grep 'CL.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
-      - name: Set model-specific environment variables
-        run: while read line; do echo "$line" >> $GITHUB_ENV ; done < ${ENV_FILE}
-      - name: Build Docker Image
-        run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" --build-arg MODEL_KEY_ARG=$MODEL_KEY --build-arg MODEL_FILE_PREFIX_ARG=$PROJECT_ID$MODEL_FILE_PREFIX --build-arg MODEL_VERSION_ARG=$MODEL_VERSION .
-      - name: Publish Docker Image to Google Container Registry
-        run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
+  # build-crf-service-container-craft-cl:
+  #   runs-on: ubuntu-latest
+  #   needs: build-and-publish-crf-model-craft-cl
+  #   name: Build container to host craft-cl CRF service
+  #   env:
+  #     IMAGE_NAME: crf_service_craft_cl
+  #     ENV_FILE: build-crf-services/cl-craft.env
+  #     DOCKERFILE: build-crf-services/crf-service.Dockerfile
+  #     GCE_REGION: us-central1
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Set up Cloud SDK
+  #       uses: google-github-actions/setup-gcloud@master
+  #       with:
+  #         project_id: ${{ secrets.GCE_PROJECT }}
+  #         service_account_key: ${{ secrets.GCE_SA_KEY }}
+  #         version: '290.0.1'
+  #     - name: Configure Docker Authentication
+  #       run: gcloud --quiet auth configure-docker
+  #     - name: Set MODEL_VERSION env
+  #       run: echo "MODEL_VERSION=$(grep 'CL.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
+  #     - name: Set model-specific environment variables
+  #       run: while read line; do echo "$line" >> $GITHUB_ENV ; done < ${ENV_FILE}
+  #     - name: Build Docker Image
+  #       run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" --build-arg MODEL_KEY_ARG=$MODEL_KEY --build-arg MODEL_FILE_PREFIX_ARG=$PROJECT_ID$MODEL_FILE_PREFIX --build-arg MODEL_VERSION_ARG=$MODEL_VERSION .
+  #     - name: Publish Docker Image to Google Container Registry
+  #       run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
 
 
 
-  # GO_BP
-  build-and-publish-crf-model-craft-go_bp:
-    runs-on: ubuntu-latest
-    # needs: ci
-    # if: needs.check-need-to-build-crf-model-craft-go_bp.outputs.status == 'success'
-    name: Build & publish CRAFT GO_BP CRF model
-    env:
-      ONT: GO_BP
-      IMAGE_NAME: build_crf_model_craft_go_bp
-      DOCKERFILE: build-crf-models/craft.crf.Dockerfile
-      GCE_REGION: us-central1
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@master
-        with:
-          project_id: ${{ secrets.GCE_PROJECT }}
-          service_account_key: ${{ secrets.GCE_SA_KEY }}
-          version: '290.0.1'
-      - name: Configure Docker Authentication
-        run: gcloud --quiet auth configure-docker
-      - name: Set MODEL_VERSION env
-        run: echo "MODEL_VERSION=$(grep 'GO_BP.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
-      - name: Build Docker Image
-        run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" .
-      - name: Publish Docker Image to Google Container Registry
-        run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
-      - name: Submit job to build model to AI-Platform
-        run: |-
-          gcloud ai-platform jobs submit training "$IMAGE_NAME$GITHUB_SHA" \
-            --scale-tier basic --region "$GCE_REGION" \
-            --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" \
-            -- "${ONT}"
-      - name: Monitor the training job
-        run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME$GITHUB_SHA"
+  # # GO_BP
+  # build-and-publish-crf-model-craft-go_bp:
+  #   runs-on: ubuntu-latest
+  #   # needs: ci
+  #   # if: needs.check-need-to-build-crf-model-craft-go_bp.outputs.status == 'success'
+  #   name: Build & publish CRAFT GO_BP CRF model
+  #   env:
+  #     ONT: GO_BP
+  #     IMAGE_NAME: build_crf_model_craft_go_bp
+  #     DOCKERFILE: build-crf-models/craft.crf.Dockerfile
+  #     GCE_REGION: us-central1
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Set up Cloud SDK
+  #       uses: google-github-actions/setup-gcloud@master
+  #       with:
+  #         project_id: ${{ secrets.GCE_PROJECT }}
+  #         service_account_key: ${{ secrets.GCE_SA_KEY }}
+  #         version: '290.0.1'
+  #     - name: Configure Docker Authentication
+  #       run: gcloud --quiet auth configure-docker
+  #     - name: Set MODEL_VERSION env
+  #       run: echo "MODEL_VERSION=$(grep 'GO_BP.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
+  #     - name: Build Docker Image
+  #       run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" .
+  #     - name: Publish Docker Image to Google Container Registry
+  #       run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
+  #     - name: Submit job to build model to AI-Platform
+  #       run: |-
+  #         gcloud ai-platform jobs submit training "$IMAGE_NAME$GITHUB_SHA" \
+  #           --scale-tier basic --region "$GCE_REGION" \
+  #           --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" \
+  #           -- "${ONT}"
+  #     - name: Monitor the training job
+  #       run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME$GITHUB_SHA"
         
 
-  build-crf-service-container-craft-go_bp:
-    runs-on: ubuntu-latest
-    needs: build-and-publish-crf-model-craft-go_bp
-    name: Build container to host craft-go_bp CRF service
-    env:
-      IMAGE_NAME: crf_service_craft_go_bp
-      ENV_FILE: build-crf-services/go_bp-craft.env
-      DOCKERFILE: build-crf-services/crf-service.Dockerfile
-      GCE_REGION: us-central1
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@master
-        with:
-          project_id: ${{ secrets.GCE_PROJECT }}
-          service_account_key: ${{ secrets.GCE_SA_KEY }}
-          version: '290.0.1'
-      - name: Configure Docker Authentication
-        run: gcloud --quiet auth configure-docker
-      - name: Set MODEL_VERSION env
-        run: echo "MODEL_VERSION=$(grep 'GO_BP.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
-      - name: Set model-specific environment variables
-        run: while read line; do echo "$line" >> $GITHUB_ENV ; done < ${ENV_FILE}
-      - name: Build Docker Image
-        run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" --build-arg MODEL_KEY_ARG=$MODEL_KEY --build-arg MODEL_FILE_PREFIX_ARG=$PROJECT_ID$MODEL_FILE_PREFIX --build-arg MODEL_VERSION_ARG=$MODEL_VERSION .
-      - name: Publish Docker Image to Google Container Registry
-        run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
+  # build-crf-service-container-craft-go_bp:
+  #   runs-on: ubuntu-latest
+  #   needs: build-and-publish-crf-model-craft-go_bp
+  #   name: Build container to host craft-go_bp CRF service
+  #   env:
+  #     IMAGE_NAME: crf_service_craft_go_bp
+  #     ENV_FILE: build-crf-services/go_bp-craft.env
+  #     DOCKERFILE: build-crf-services/crf-service.Dockerfile
+  #     GCE_REGION: us-central1
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Set up Cloud SDK
+  #       uses: google-github-actions/setup-gcloud@master
+  #       with:
+  #         project_id: ${{ secrets.GCE_PROJECT }}
+  #         service_account_key: ${{ secrets.GCE_SA_KEY }}
+  #         version: '290.0.1'
+  #     - name: Configure Docker Authentication
+  #       run: gcloud --quiet auth configure-docker
+  #     - name: Set MODEL_VERSION env
+  #       run: echo "MODEL_VERSION=$(grep 'GO_BP.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
+  #     - name: Set model-specific environment variables
+  #       run: while read line; do echo "$line" >> $GITHUB_ENV ; done < ${ENV_FILE}
+  #     - name: Build Docker Image
+  #       run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" --build-arg MODEL_KEY_ARG=$MODEL_KEY --build-arg MODEL_FILE_PREFIX_ARG=$PROJECT_ID$MODEL_FILE_PREFIX --build-arg MODEL_VERSION_ARG=$MODEL_VERSION .
+  #     - name: Publish Docker Image to Google Container Registry
+  #       run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
 
-  # GO_CC
-  build-and-publish-crf-model-craft-go_cc:
-    runs-on: ubuntu-latest
-    # needs: ci
-    # if: needs.check-need-to-build-crf-model-craft-go_cc.outputs.status == 'success'
-    name: Build & publish CRAFT GO_CC CRF model
-    env:
-      ONT: GO_CC
-      IMAGE_NAME: build_crf_model_craft_go_cc
-      DOCKERFILE: build-crf-models/craft.crf.Dockerfile
-      GCE_REGION: us-central1
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@master
-        with:
-          project_id: ${{ secrets.GCE_PROJECT }}
-          service_account_key: ${{ secrets.GCE_SA_KEY }}
-          version: '290.0.1'
-      - name: Configure Docker Authentication
-        run: gcloud --quiet auth configure-docker
-      - name: Set MODEL_VERSION env
-        run: echo "MODEL_VERSION=$(grep 'GO_CC.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
-      - name: Build Docker Image
-        run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" .
-      - name: Publish Docker Image to Google Container Registry
-        run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
-      - name: Submit job to build model to AI-Platform
-        run: |-
-          gcloud ai-platform jobs submit training "$IMAGE_NAME$GITHUB_SHA" \
-            --scale-tier basic --region "$GCE_REGION" \
-            --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" \
-            -- "${ONT}"
-      - name: Monitor the training job
-        run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME$GITHUB_SHA"
+  # # GO_CC
+  # build-and-publish-crf-model-craft-go_cc:
+  #   runs-on: ubuntu-latest
+  #   # needs: ci
+  #   # if: needs.check-need-to-build-crf-model-craft-go_cc.outputs.status == 'success'
+  #   name: Build & publish CRAFT GO_CC CRF model
+  #   env:
+  #     ONT: GO_CC
+  #     IMAGE_NAME: build_crf_model_craft_go_cc
+  #     DOCKERFILE: build-crf-models/craft.crf.Dockerfile
+  #     GCE_REGION: us-central1
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Set up Cloud SDK
+  #       uses: google-github-actions/setup-gcloud@master
+  #       with:
+  #         project_id: ${{ secrets.GCE_PROJECT }}
+  #         service_account_key: ${{ secrets.GCE_SA_KEY }}
+  #         version: '290.0.1'
+  #     - name: Configure Docker Authentication
+  #       run: gcloud --quiet auth configure-docker
+  #     - name: Set MODEL_VERSION env
+  #       run: echo "MODEL_VERSION=$(grep 'GO_CC.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
+  #     - name: Build Docker Image
+  #       run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" .
+  #     - name: Publish Docker Image to Google Container Registry
+  #       run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
+  #     - name: Submit job to build model to AI-Platform
+  #       run: |-
+  #         gcloud ai-platform jobs submit training "$IMAGE_NAME$GITHUB_SHA" \
+  #           --scale-tier basic --region "$GCE_REGION" \
+  #           --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" \
+  #           -- "${ONT}"
+  #     - name: Monitor the training job
+  #       run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME$GITHUB_SHA"
         
 
-  build-crf-service-container-craft-go_cc:
-    runs-on: ubuntu-latest
-    needs: build-and-publish-crf-model-craft-go_cc
-    name: Build container to host craft-go_cc CRF service
-    env:
-      IMAGE_NAME: crf_service_craft_go_cc
-      ENV_FILE: build-crf-services/go_cc-craft.env
-      DOCKERFILE: build-crf-services/crf-service.Dockerfile
-      GCE_REGION: us-central1
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@master
-        with:
-          project_id: ${{ secrets.GCE_PROJECT }}
-          service_account_key: ${{ secrets.GCE_SA_KEY }}
-          version: '290.0.1'
-      - name: Configure Docker Authentication
-        run: gcloud --quiet auth configure-docker
-      - name: Set MODEL_VERSION env
-        run: echo "MODEL_VERSION=$(grep 'GO_CC.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
-      - name: Set model-specific environment variables
-        run: while read line; do echo "$line" >> $GITHUB_ENV ; done < ${ENV_FILE}
-      - name: Build Docker Image
-        run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" --build-arg MODEL_KEY_ARG=$MODEL_KEY --build-arg MODEL_FILE_PREFIX_ARG=$PROJECT_ID$MODEL_FILE_PREFIX --build-arg MODEL_VERSION_ARG=$MODEL_VERSION .
-      - name: Publish Docker Image to Google Container Registry
-        run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
+  # build-crf-service-container-craft-go_cc:
+  #   runs-on: ubuntu-latest
+  #   needs: build-and-publish-crf-model-craft-go_cc
+  #   name: Build container to host craft-go_cc CRF service
+  #   env:
+  #     IMAGE_NAME: crf_service_craft_go_cc
+  #     ENV_FILE: build-crf-services/go_cc-craft.env
+  #     DOCKERFILE: build-crf-services/crf-service.Dockerfile
+  #     GCE_REGION: us-central1
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Set up Cloud SDK
+  #       uses: google-github-actions/setup-gcloud@master
+  #       with:
+  #         project_id: ${{ secrets.GCE_PROJECT }}
+  #         service_account_key: ${{ secrets.GCE_SA_KEY }}
+  #         version: '290.0.1'
+  #     - name: Configure Docker Authentication
+  #       run: gcloud --quiet auth configure-docker
+  #     - name: Set MODEL_VERSION env
+  #       run: echo "MODEL_VERSION=$(grep 'GO_CC.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
+  #     - name: Set model-specific environment variables
+  #       run: while read line; do echo "$line" >> $GITHUB_ENV ; done < ${ENV_FILE}
+  #     - name: Build Docker Image
+  #       run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" --build-arg MODEL_KEY_ARG=$MODEL_KEY --build-arg MODEL_FILE_PREFIX_ARG=$PROJECT_ID$MODEL_FILE_PREFIX --build-arg MODEL_VERSION_ARG=$MODEL_VERSION .
+  #     - name: Publish Docker Image to Google Container Registry
+  #       run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
 
-  # GO_MF
-  build-and-publish-crf-model-craft-go_mf:
-    runs-on: ubuntu-latest
-    # needs: ci
-    # if: needs.check-need-to-build-crf-model-craft-go_mf.outputs.status == 'success'
-    name: Build & publish CRAFT GO_MF CRF model
-    env:
-      ONT: GO_MF
-      IMAGE_NAME: build_crf_model_craft_go_mf
-      DOCKERFILE: build-crf-models/craft.crf.Dockerfile
-      GCE_REGION: us-central1
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@master
-        with:
-          project_id: ${{ secrets.GCE_PROJECT }}
-          service_account_key: ${{ secrets.GCE_SA_KEY }}
-          version: '290.0.1'
-      - name: Configure Docker Authentication
-        run: gcloud --quiet auth configure-docker
-      - name: Set MODEL_VERSION env
-        run: echo "MODEL_VERSION=$(grep 'GO_MF.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
-      - name: Build Docker Image
-        run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" .
-      - name: Publish Docker Image to Google Container Registry
-        run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
-      - name: Submit job to build model to AI-Platform
-        run: |-
-          gcloud ai-platform jobs submit training "$IMAGE_NAME$GITHUB_SHA" \
-            --scale-tier basic --region "$GCE_REGION" \
-            --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" \
-            -- "${ONT}"
-      - name: Monitor the training job
-        run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME$GITHUB_SHA"
+  # # GO_MF
+  # build-and-publish-crf-model-craft-go_mf:
+  #   runs-on: ubuntu-latest
+  #   # needs: ci
+  #   # if: needs.check-need-to-build-crf-model-craft-go_mf.outputs.status == 'success'
+  #   name: Build & publish CRAFT GO_MF CRF model
+  #   env:
+  #     ONT: GO_MF
+  #     IMAGE_NAME: build_crf_model_craft_go_mf
+  #     DOCKERFILE: build-crf-models/craft.crf.Dockerfile
+  #     GCE_REGION: us-central1
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Set up Cloud SDK
+  #       uses: google-github-actions/setup-gcloud@master
+  #       with:
+  #         project_id: ${{ secrets.GCE_PROJECT }}
+  #         service_account_key: ${{ secrets.GCE_SA_KEY }}
+  #         version: '290.0.1'
+  #     - name: Configure Docker Authentication
+  #       run: gcloud --quiet auth configure-docker
+  #     - name: Set MODEL_VERSION env
+  #       run: echo "MODEL_VERSION=$(grep 'GO_MF.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
+  #     - name: Build Docker Image
+  #       run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" .
+  #     - name: Publish Docker Image to Google Container Registry
+  #       run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
+  #     - name: Submit job to build model to AI-Platform
+  #       run: |-
+  #         gcloud ai-platform jobs submit training "$IMAGE_NAME$GITHUB_SHA" \
+  #           --scale-tier basic --region "$GCE_REGION" \
+  #           --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" \
+  #           -- "${ONT}"
+  #     - name: Monitor the training job
+  #       run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME$GITHUB_SHA"
         
 
-  build-crf-service-container-craft-go_mf:
-    runs-on: ubuntu-latest
-    needs: build-and-publish-crf-model-craft-go_mf
-    name: Build container to host craft-go_mf CRF service
-    env:
-      IMAGE_NAME: crf_service_craft_go_mf
-      ENV_FILE: build-crf-services/go_mf-craft.env
-      DOCKERFILE: build-crf-services/crf-service.Dockerfile
-      GCE_REGION: us-central1
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@master
-        with:
-          project_id: ${{ secrets.GCE_PROJECT }}
-          service_account_key: ${{ secrets.GCE_SA_KEY }}
-          version: '290.0.1'
-      - name: Configure Docker Authentication
-        run: gcloud --quiet auth configure-docker
-      - name: Set MODEL_VERSION env
-        run: echo "MODEL_VERSION=$(grep 'GO_MF.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
-      - name: Set model-specific environment variables
-        run: while read line; do echo "$line" >> $GITHUB_ENV ; done < ${ENV_FILE}
-      - name: Build Docker Image
-        run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" --build-arg MODEL_KEY_ARG=$MODEL_KEY --build-arg MODEL_FILE_PREFIX_ARG=$PROJECT_ID$MODEL_FILE_PREFIX --build-arg MODEL_VERSION_ARG=$MODEL_VERSION .
-      - name: Publish Docker Image to Google Container Registry
-        run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
+  # build-crf-service-container-craft-go_mf:
+  #   runs-on: ubuntu-latest
+  #   needs: build-and-publish-crf-model-craft-go_mf
+  #   name: Build container to host craft-go_mf CRF service
+  #   env:
+  #     IMAGE_NAME: crf_service_craft_go_mf
+  #     ENV_FILE: build-crf-services/go_mf-craft.env
+  #     DOCKERFILE: build-crf-services/crf-service.Dockerfile
+  #     GCE_REGION: us-central1
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Set up Cloud SDK
+  #       uses: google-github-actions/setup-gcloud@master
+  #       with:
+  #         project_id: ${{ secrets.GCE_PROJECT }}
+  #         service_account_key: ${{ secrets.GCE_SA_KEY }}
+  #         version: '290.0.1'
+  #     - name: Configure Docker Authentication
+  #       run: gcloud --quiet auth configure-docker
+  #     - name: Set MODEL_VERSION env
+  #       run: echo "MODEL_VERSION=$(grep 'GO_MF.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
+  #     - name: Set model-specific environment variables
+  #       run: while read line; do echo "$line" >> $GITHUB_ENV ; done < ${ENV_FILE}
+  #     - name: Build Docker Image
+  #       run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" --build-arg MODEL_KEY_ARG=$MODEL_KEY --build-arg MODEL_FILE_PREFIX_ARG=$PROJECT_ID$MODEL_FILE_PREFIX --build-arg MODEL_VERSION_ARG=$MODEL_VERSION .
+  #     - name: Publish Docker Image to Google Container Registry
+  #       run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
 
-  # MOP
-  build-and-publish-crf-model-craft-mop:
-    runs-on: ubuntu-latest
-    # needs: ci
-    # if: needs.check-need-to-build-crf-model-craft-mop.outputs.status == 'success'
-    name: Build & publish CRAFT MOP CRF model
-    env:
-      ONT: MOP
-      IMAGE_NAME: build_crf_model_craft_mop
-      DOCKERFILE: build-crf-models/craft.crf.Dockerfile
-      GCE_REGION: us-central1
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@master
-        with:
-          project_id: ${{ secrets.GCE_PROJECT }}
-          service_account_key: ${{ secrets.GCE_SA_KEY }}
-          version: '290.0.1'
-      - name: Configure Docker Authentication
-        run: gcloud --quiet auth configure-docker
-      - name: Set MODEL_VERSION env
-        run: echo "MODEL_VERSION=$(grep 'MOP.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
-      - name: Build Docker Image
-        run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" .
-      - name: Publish Docker Image to Google Container Registry
-        run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
-      - name: Submit job to build model to AI-Platform
-        run: |-
-          gcloud ai-platform jobs submit training "$IMAGE_NAME$GITHUB_SHA" \
-            --scale-tier basic --region "$GCE_REGION" \
-            --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" \
-            -- "${ONT}"
-      - name: Monitor the training job
-        run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME$GITHUB_SHA"
+  # # MOP
+  # build-and-publish-crf-model-craft-mop:
+  #   runs-on: ubuntu-latest
+  #   # needs: ci
+  #   # if: needs.check-need-to-build-crf-model-craft-mop.outputs.status == 'success'
+  #   name: Build & publish CRAFT MOP CRF model
+  #   env:
+  #     ONT: MOP
+  #     IMAGE_NAME: build_crf_model_craft_mop
+  #     DOCKERFILE: build-crf-models/craft.crf.Dockerfile
+  #     GCE_REGION: us-central1
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Set up Cloud SDK
+  #       uses: google-github-actions/setup-gcloud@master
+  #       with:
+  #         project_id: ${{ secrets.GCE_PROJECT }}
+  #         service_account_key: ${{ secrets.GCE_SA_KEY }}
+  #         version: '290.0.1'
+  #     - name: Configure Docker Authentication
+  #       run: gcloud --quiet auth configure-docker
+  #     - name: Set MODEL_VERSION env
+  #       run: echo "MODEL_VERSION=$(grep 'MOP.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
+  #     - name: Build Docker Image
+  #       run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" .
+  #     - name: Publish Docker Image to Google Container Registry
+  #       run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
+  #     - name: Submit job to build model to AI-Platform
+  #       run: |-
+  #         gcloud ai-platform jobs submit training "$IMAGE_NAME$GITHUB_SHA" \
+  #           --scale-tier basic --region "$GCE_REGION" \
+  #           --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" \
+  #           -- "${ONT}"
+  #     - name: Monitor the training job
+  #       run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME$GITHUB_SHA"
         
 
-  build-crf-service-container-craft-mop:
-    runs-on: ubuntu-latest
-    needs: build-and-publish-crf-model-craft-mop
-    name: Build container to host craft-mop CRF service
-    env:
-      IMAGE_NAME: crf_service_craft_mop
-      ENV_FILE: build-crf-services/mop-craft.env
-      DOCKERFILE: build-crf-services/crf-service.Dockerfile
-      GCE_REGION: us-central1
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@master
-        with:
-          project_id: ${{ secrets.GCE_PROJECT }}
-          service_account_key: ${{ secrets.GCE_SA_KEY }}
-          version: '290.0.1'
-      - name: Configure Docker Authentication
-        run: gcloud --quiet auth configure-docker
-      - name: Set MODEL_VERSION env
-        run: echo "MODEL_VERSION=$(grep 'MOP.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
-      - name: Set model-specific environment variables
-        run: while read line; do echo "$line" >> $GITHUB_ENV ; done < ${ENV_FILE}
-      - name: Build Docker Image
-        run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" --build-arg MODEL_KEY_ARG=$MODEL_KEY --build-arg MODEL_FILE_PREFIX_ARG=$PROJECT_ID$MODEL_FILE_PREFIX --build-arg MODEL_VERSION_ARG=$MODEL_VERSION .
-      - name: Publish Docker Image to Google Container Registry
-        run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
+  # build-crf-service-container-craft-mop:
+  #   runs-on: ubuntu-latest
+  #   needs: build-and-publish-crf-model-craft-mop
+  #   name: Build container to host craft-mop CRF service
+  #   env:
+  #     IMAGE_NAME: crf_service_craft_mop
+  #     ENV_FILE: build-crf-services/mop-craft.env
+  #     DOCKERFILE: build-crf-services/crf-service.Dockerfile
+  #     GCE_REGION: us-central1
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Set up Cloud SDK
+  #       uses: google-github-actions/setup-gcloud@master
+  #       with:
+  #         project_id: ${{ secrets.GCE_PROJECT }}
+  #         service_account_key: ${{ secrets.GCE_SA_KEY }}
+  #         version: '290.0.1'
+  #     - name: Configure Docker Authentication
+  #       run: gcloud --quiet auth configure-docker
+  #     - name: Set MODEL_VERSION env
+  #       run: echo "MODEL_VERSION=$(grep 'MOP.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
+  #     - name: Set model-specific environment variables
+  #       run: while read line; do echo "$line" >> $GITHUB_ENV ; done < ${ENV_FILE}
+  #     - name: Build Docker Image
+  #       run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" --build-arg MODEL_KEY_ARG=$MODEL_KEY --build-arg MODEL_FILE_PREFIX_ARG=$PROJECT_ID$MODEL_FILE_PREFIX --build-arg MODEL_VERSION_ARG=$MODEL_VERSION .
+  #     - name: Publish Docker Image to Google Container Registry
+  #       run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
 
-  # NCBITaxon
-  build-and-publish-crf-model-craft-ncbitaxon:
-    runs-on: ubuntu-latest
-    # needs: ci
-    # if: needs.check-need-to-build-crf-model-craft-ncbitaxon.outputs.status == 'success'
-    name: Build & publish CRAFT NCBITAXON CRF model
-    env:
-      ONT: NCBITAXON
-      IMAGE_NAME: build_crf_model_craft_ncbitaxon
-      DOCKERFILE: build-crf-models/craft.crf.Dockerfile
-      GCE_REGION: us-central1
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@master
-        with:
-          project_id: ${{ secrets.GCE_PROJECT }}
-          service_account_key: ${{ secrets.GCE_SA_KEY }}
-          version: '290.0.1'
-      - name: Configure Docker Authentication
-        run: gcloud --quiet auth configure-docker
-      - name: Set MODEL_VERSION env
-        run: echo "MODEL_VERSION=$(grep 'NCBITAXON.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
-      - name: Build Docker Image
-        run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" .
-      - name: Publish Docker Image to Google Container Registry
-        run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
-      - name: Submit job to build model to AI-Platform
-        run: |-
-          gcloud ai-platform jobs submit training "$IMAGE_NAME$GITHUB_SHA" \
-            --scale-tier basic --region "$GCE_REGION" \
-            --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" \
-            -- "${ONT}"
-      - name: Monitor the training job
-        run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME$GITHUB_SHA"
+  # # NCBITaxon
+  # build-and-publish-crf-model-craft-ncbitaxon:
+  #   runs-on: ubuntu-latest
+  #   # needs: ci
+  #   # if: needs.check-need-to-build-crf-model-craft-ncbitaxon.outputs.status == 'success'
+  #   name: Build & publish CRAFT NCBITAXON CRF model
+  #   env:
+  #     ONT: NCBITAXON
+  #     IMAGE_NAME: build_crf_model_craft_ncbitaxon
+  #     DOCKERFILE: build-crf-models/craft.crf.Dockerfile
+  #     GCE_REGION: us-central1
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Set up Cloud SDK
+  #       uses: google-github-actions/setup-gcloud@master
+  #       with:
+  #         project_id: ${{ secrets.GCE_PROJECT }}
+  #         service_account_key: ${{ secrets.GCE_SA_KEY }}
+  #         version: '290.0.1'
+  #     - name: Configure Docker Authentication
+  #       run: gcloud --quiet auth configure-docker
+  #     - name: Set MODEL_VERSION env
+  #       run: echo "MODEL_VERSION=$(grep 'NCBITAXON.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
+  #     - name: Build Docker Image
+  #       run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" .
+  #     - name: Publish Docker Image to Google Container Registry
+  #       run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
+  #     - name: Submit job to build model to AI-Platform
+  #       run: |-
+  #         gcloud ai-platform jobs submit training "$IMAGE_NAME$GITHUB_SHA" \
+  #           --scale-tier basic --region "$GCE_REGION" \
+  #           --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" \
+  #           -- "${ONT}"
+  #     - name: Monitor the training job
+  #       run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME$GITHUB_SHA"
         
 
-  build-crf-service-container-craft-ncbitaxon:
-    runs-on: ubuntu-latest
-    needs: build-and-publish-crf-model-craft-ncbitaxon
-    name: Build container to host craft-ncbitaxon CRF service
-    env:
-      IMAGE_NAME: crf_service_craft_ncbitaxon
-      ENV_FILE: build-crf-services/ncbitaxon-craft.env
-      DOCKERFILE: build-crf-services/crf-service.Dockerfile
-      GCE_REGION: us-central1
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@master
-        with:
-          project_id: ${{ secrets.GCE_PROJECT }}
-          service_account_key: ${{ secrets.GCE_SA_KEY }}
-          version: '290.0.1'
-      - name: Configure Docker Authentication
-        run: gcloud --quiet auth configure-docker
-      - name: Set MODEL_VERSION env
-        run: echo "MODEL_VERSION=$(grep 'NCBITAXON.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
-      - name: Set model-specific environment variables
-        run: while read line; do echo "$line" >> $GITHUB_ENV ; done < ${ENV_FILE}
-      - name: Build Docker Image
-        run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" --build-arg MODEL_KEY_ARG=$MODEL_KEY --build-arg MODEL_FILE_PREFIX_ARG=$PROJECT_ID$MODEL_FILE_PREFIX --build-arg MODEL_VERSION_ARG=$MODEL_VERSION .
-      - name: Publish Docker Image to Google Container Registry
-        run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
+  # build-crf-service-container-craft-ncbitaxon:
+  #   runs-on: ubuntu-latest
+  #   needs: build-and-publish-crf-model-craft-ncbitaxon
+  #   name: Build container to host craft-ncbitaxon CRF service
+  #   env:
+  #     IMAGE_NAME: crf_service_craft_ncbitaxon
+  #     ENV_FILE: build-crf-services/ncbitaxon-craft.env
+  #     DOCKERFILE: build-crf-services/crf-service.Dockerfile
+  #     GCE_REGION: us-central1
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Set up Cloud SDK
+  #       uses: google-github-actions/setup-gcloud@master
+  #       with:
+  #         project_id: ${{ secrets.GCE_PROJECT }}
+  #         service_account_key: ${{ secrets.GCE_SA_KEY }}
+  #         version: '290.0.1'
+  #     - name: Configure Docker Authentication
+  #       run: gcloud --quiet auth configure-docker
+  #     - name: Set MODEL_VERSION env
+  #       run: echo "MODEL_VERSION=$(grep 'NCBITAXON.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
+  #     - name: Set model-specific environment variables
+  #       run: while read line; do echo "$line" >> $GITHUB_ENV ; done < ${ENV_FILE}
+  #     - name: Build Docker Image
+  #       run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" --build-arg MODEL_KEY_ARG=$MODEL_KEY --build-arg MODEL_FILE_PREFIX_ARG=$PROJECT_ID$MODEL_FILE_PREFIX --build-arg MODEL_VERSION_ARG=$MODEL_VERSION .
+  #     - name: Publish Docker Image to Google Container Registry
+  #       run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
 
-  # PR
-  build-and-publish-crf-model-craft-pr:
-    runs-on: ubuntu-latest
-    # needs: ci
-    # if: needs.check-need-to-build-crf-model-craft-pr.outputs.status == 'success'
-    name: Build & publish CRAFT PR CRF model
-    env:
-      ONT: PR
-      IMAGE_NAME: build_crf_model_craft_pr
-      DOCKERFILE: build-crf-models/craft.crf.Dockerfile
-      GCE_REGION: us-central1
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@master
-        with:
-          project_id: ${{ secrets.GCE_PROJECT }}
-          service_account_key: ${{ secrets.GCE_SA_KEY }}
-          version: '290.0.1'
-      - name: Configure Docker Authentication
-        run: gcloud --quiet auth configure-docker
-      - name: Set MODEL_VERSION env
-        run: echo "MODEL_VERSION=$(grep 'PR.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
-      - name: Build Docker Image
-        run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" .
-      - name: Publish Docker Image to Google Container Registry
-        run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
-      - name: Submit job to build model to AI-Platform
-        run: |-
-          gcloud ai-platform jobs submit training "$IMAGE_NAME$GITHUB_SHA" \
-            --scale-tier basic --region "$GCE_REGION" \
-            --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" \
-            -- "${ONT}"
-      - name: Monitor the training job
-        run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME$GITHUB_SHA"
+  # # PR
+  # build-and-publish-crf-model-craft-pr:
+  #   runs-on: ubuntu-latest
+  #   # needs: ci
+  #   # if: needs.check-need-to-build-crf-model-craft-pr.outputs.status == 'success'
+  #   name: Build & publish CRAFT PR CRF model
+  #   env:
+  #     ONT: PR
+  #     IMAGE_NAME: build_crf_model_craft_pr
+  #     DOCKERFILE: build-crf-models/craft.crf.Dockerfile
+  #     GCE_REGION: us-central1
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Set up Cloud SDK
+  #       uses: google-github-actions/setup-gcloud@master
+  #       with:
+  #         project_id: ${{ secrets.GCE_PROJECT }}
+  #         service_account_key: ${{ secrets.GCE_SA_KEY }}
+  #         version: '290.0.1'
+  #     - name: Configure Docker Authentication
+  #       run: gcloud --quiet auth configure-docker
+  #     - name: Set MODEL_VERSION env
+  #       run: echo "MODEL_VERSION=$(grep 'PR.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
+  #     - name: Build Docker Image
+  #       run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" .
+  #     - name: Publish Docker Image to Google Container Registry
+  #       run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
+  #     - name: Submit job to build model to AI-Platform
+  #       run: |-
+  #         gcloud ai-platform jobs submit training "$IMAGE_NAME$GITHUB_SHA" \
+  #           --scale-tier basic --region "$GCE_REGION" \
+  #           --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" \
+  #           -- "${ONT}"
+  #     - name: Monitor the training job
+  #       run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME$GITHUB_SHA"
         
 
-  build-crf-service-container-craft-pr:
-    runs-on: ubuntu-latest
-    needs: build-and-publish-crf-model-craft-pr
-    name: Build container to host craft-pr CRF service
-    env:
-      IMAGE_NAME: crf_service_craft_pr
-      ENV_FILE: build-crf-services/pr-craft.env
-      DOCKERFILE: build-crf-services/crf-service.Dockerfile
-      GCE_REGION: us-central1
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@master
-        with:
-          project_id: ${{ secrets.GCE_PROJECT }}
-          service_account_key: ${{ secrets.GCE_SA_KEY }}
-          version: '290.0.1'
-      - name: Configure Docker Authentication
-        run: gcloud --quiet auth configure-docker
-      - name: Set MODEL_VERSION env
-        run: echo "MODEL_VERSION=$(grep 'PR.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
-      - name: Set model-specific environment variables
-        run: while read line; do echo "$line" >> $GITHUB_ENV ; done < ${ENV_FILE}
-      - name: Build Docker Image
-        run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" --build-arg MODEL_KEY_ARG=$MODEL_KEY --build-arg MODEL_FILE_PREFIX_ARG=$PROJECT_ID$MODEL_FILE_PREFIX --build-arg MODEL_VERSION_ARG=$MODEL_VERSION .
-      - name: Publish Docker Image to Google Container Registry
-        run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
+  # build-crf-service-container-craft-pr:
+  #   runs-on: ubuntu-latest
+  #   needs: build-and-publish-crf-model-craft-pr
+  #   name: Build container to host craft-pr CRF service
+  #   env:
+  #     IMAGE_NAME: crf_service_craft_pr
+  #     ENV_FILE: build-crf-services/pr-craft.env
+  #     DOCKERFILE: build-crf-services/crf-service.Dockerfile
+  #     GCE_REGION: us-central1
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Set up Cloud SDK
+  #       uses: google-github-actions/setup-gcloud@master
+  #       with:
+  #         project_id: ${{ secrets.GCE_PROJECT }}
+  #         service_account_key: ${{ secrets.GCE_SA_KEY }}
+  #         version: '290.0.1'
+  #     - name: Configure Docker Authentication
+  #       run: gcloud --quiet auth configure-docker
+  #     - name: Set MODEL_VERSION env
+  #       run: echo "MODEL_VERSION=$(grep 'PR.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
+  #     - name: Set model-specific environment variables
+  #       run: while read line; do echo "$line" >> $GITHUB_ENV ; done < ${ENV_FILE}
+  #     - name: Build Docker Image
+  #       run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" --build-arg MODEL_KEY_ARG=$MODEL_KEY --build-arg MODEL_FILE_PREFIX_ARG=$PROJECT_ID$MODEL_FILE_PREFIX --build-arg MODEL_VERSION_ARG=$MODEL_VERSION .
+  #     - name: Publish Docker Image to Google Container Registry
+  #       run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
 
-  # SO
-  build-and-publish-crf-model-craft-so:
-    runs-on: ubuntu-latest
-    # needs: ci
-    # if: needs.check-need-to-build-crf-model-craft-so.outputs.status == 'success'
-    name: Build & publish CRAFT SO CRF model
-    env:
-      ONT: SO
-      IMAGE_NAME: build_crf_model_craft_so
-      DOCKERFILE: build-crf-models/craft.crf.Dockerfile
-      GCE_REGION: us-central1
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@master
-        with:
-          project_id: ${{ secrets.GCE_PROJECT }}
-          service_account_key: ${{ secrets.GCE_SA_KEY }}
-          version: '290.0.1'
-      - name: Configure Docker Authentication
-        run: gcloud --quiet auth configure-docker
-      - name: Set MODEL_VERSION env
-        run: echo "MODEL_VERSION=$(grep 'SO.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
-      - name: Build Docker Image
-        run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" .
-      - name: Publish Docker Image to Google Container Registry
-        run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
-      - name: Submit job to build model to AI-Platform
-        run: |-
-          gcloud ai-platform jobs submit training "$IMAGE_NAME$GITHUB_SHA" \
-            --scale-tier basic --region "$GCE_REGION" \
-            --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" \
-            -- "${ONT}"
-      - name: Monitor the training job
-        run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME$GITHUB_SHA"
+  # # SO
+  # build-and-publish-crf-model-craft-so:
+  #   runs-on: ubuntu-latest
+  #   # needs: ci
+  #   # if: needs.check-need-to-build-crf-model-craft-so.outputs.status == 'success'
+  #   name: Build & publish CRAFT SO CRF model
+  #   env:
+  #     ONT: SO
+  #     IMAGE_NAME: build_crf_model_craft_so
+  #     DOCKERFILE: build-crf-models/craft.crf.Dockerfile
+  #     GCE_REGION: us-central1
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Set up Cloud SDK
+  #       uses: google-github-actions/setup-gcloud@master
+  #       with:
+  #         project_id: ${{ secrets.GCE_PROJECT }}
+  #         service_account_key: ${{ secrets.GCE_SA_KEY }}
+  #         version: '290.0.1'
+  #     - name: Configure Docker Authentication
+  #       run: gcloud --quiet auth configure-docker
+  #     - name: Set MODEL_VERSION env
+  #       run: echo "MODEL_VERSION=$(grep 'SO.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
+  #     - name: Build Docker Image
+  #       run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" .
+  #     - name: Publish Docker Image to Google Container Registry
+  #       run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
+  #     - name: Submit job to build model to AI-Platform
+  #       run: |-
+  #         gcloud ai-platform jobs submit training "$IMAGE_NAME$GITHUB_SHA" \
+  #           --scale-tier basic --region "$GCE_REGION" \
+  #           --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" \
+  #           -- "${ONT}"
+  #     - name: Monitor the training job
+  #       run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME$GITHUB_SHA"
         
 
-  build-crf-service-container-craft-so:
-    runs-on: ubuntu-latest
-    needs: build-and-publish-crf-model-craft-so
-    name: Build container to host craft-so CRF service
-    env:
-      IMAGE_NAME: crf_service_craft_so
-      ENV_FILE: build-crf-services/so-craft.env
-      DOCKERFILE: build-crf-services/crf-service.Dockerfile
-      GCE_REGION: us-central1
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@master
-        with:
-          project_id: ${{ secrets.GCE_PROJECT }}
-          service_account_key: ${{ secrets.GCE_SA_KEY }}
-          version: '290.0.1'
-      - name: Configure Docker Authentication
-        run: gcloud --quiet auth configure-docker
-      - name: Set MODEL_VERSION env
-        run: echo "MODEL_VERSION=$(grep 'SO.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
-      - name: Set model-specific environment variables
-        run: while read line; do echo "$line" >> $GITHUB_ENV ; done < ${ENV_FILE}
-      - name: Build Docker Image
-        run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" --build-arg MODEL_KEY_ARG=$MODEL_KEY --build-arg MODEL_FILE_PREFIX_ARG=$PROJECT_ID$MODEL_FILE_PREFIX --build-arg MODEL_VERSION_ARG=$MODEL_VERSION .
-      - name: Publish Docker Image to Google Container Registry
-        run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
+  # build-crf-service-container-craft-so:
+  #   runs-on: ubuntu-latest
+  #   needs: build-and-publish-crf-model-craft-so
+  #   name: Build container to host craft-so CRF service
+  #   env:
+  #     IMAGE_NAME: crf_service_craft_so
+  #     ENV_FILE: build-crf-services/so-craft.env
+  #     DOCKERFILE: build-crf-services/crf-service.Dockerfile
+  #     GCE_REGION: us-central1
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Set up Cloud SDK
+  #       uses: google-github-actions/setup-gcloud@master
+  #       with:
+  #         project_id: ${{ secrets.GCE_PROJECT }}
+  #         service_account_key: ${{ secrets.GCE_SA_KEY }}
+  #         version: '290.0.1'
+  #     - name: Configure Docker Authentication
+  #       run: gcloud --quiet auth configure-docker
+  #     - name: Set MODEL_VERSION env
+  #       run: echo "MODEL_VERSION=$(grep 'SO.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
+  #     - name: Set model-specific environment variables
+  #       run: while read line; do echo "$line" >> $GITHUB_ENV ; done < ${ENV_FILE}
+  #     - name: Build Docker Image
+  #       run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" --build-arg MODEL_KEY_ARG=$MODEL_KEY --build-arg MODEL_FILE_PREFIX_ARG=$PROJECT_ID$MODEL_FILE_PREFIX --build-arg MODEL_VERSION_ARG=$MODEL_VERSION .
+  #     - name: Publish Docker Image to Google Container Registry
+  #       run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
 
-  # UBERON
-  build-and-publish-crf-model-craft-uberon:
-    runs-on: ubuntu-latest
-    # needs: ci
-    # if: needs.check-need-to-build-crf-model-craft-uberon.outputs.status == 'success'
-    name: Build & publish CRAFT UBERON CRF model
-    env:
-      ONT: UBERON
-      IMAGE_NAME: build_crf_model_craft_uberon
-      DOCKERFILE: build-crf-models/craft.crf.Dockerfile
-      GCE_REGION: us-central1
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@master
-        with:
-          project_id: ${{ secrets.GCE_PROJECT }}
-          service_account_key: ${{ secrets.GCE_SA_KEY }}
-          version: '290.0.1'
-      - name: Configure Docker Authentication
-        run: gcloud --quiet auth configure-docker
-      - name: Set MODEL_VERSION env
-        run: echo "MODEL_VERSION=$(grep 'UBERON.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
-      - name: Build Docker Image
-        run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" .
-      - name: Publish Docker Image to Google Container Registry
-        run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
-      - name: Submit job to build model to AI-Platform
-        run: |-
-          gcloud ai-platform jobs submit training "$IMAGE_NAME$GITHUB_SHA" \
-            --scale-tier basic --region "$GCE_REGION" \
-            --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" \
-            -- "${ONT}"
-      - name: Monitor the training job
-        run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME$GITHUB_SHA"
+  # # UBERON
+  # build-and-publish-crf-model-craft-uberon:
+  #   runs-on: ubuntu-latest
+  #   # needs: ci
+  #   # if: needs.check-need-to-build-crf-model-craft-uberon.outputs.status == 'success'
+  #   name: Build & publish CRAFT UBERON CRF model
+  #   env:
+  #     ONT: UBERON
+  #     IMAGE_NAME: build_crf_model_craft_uberon
+  #     DOCKERFILE: build-crf-models/craft.crf.Dockerfile
+  #     GCE_REGION: us-central1
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Set up Cloud SDK
+  #       uses: google-github-actions/setup-gcloud@master
+  #       with:
+  #         project_id: ${{ secrets.GCE_PROJECT }}
+  #         service_account_key: ${{ secrets.GCE_SA_KEY }}
+  #         version: '290.0.1'
+  #     - name: Configure Docker Authentication
+  #       run: gcloud --quiet auth configure-docker
+  #     - name: Set MODEL_VERSION env
+  #       run: echo "MODEL_VERSION=$(grep 'UBERON.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
+  #     - name: Build Docker Image
+  #       run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" .
+  #     - name: Publish Docker Image to Google Container Registry
+  #       run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
+  #     - name: Submit job to build model to AI-Platform
+  #       run: |-
+  #         gcloud ai-platform jobs submit training "$IMAGE_NAME$GITHUB_SHA" \
+  #           --scale-tier basic --region "$GCE_REGION" \
+  #           --master-image-uri "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" \
+  #           -- "${ONT}"
+  #     - name: Monitor the training job
+  #       run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME$GITHUB_SHA"
         
 
-  build-crf-service-container-craft-uberon:
-    runs-on: ubuntu-latest
-    needs: build-and-publish-crf-model-craft-uberon
-    name: Build container to host craft-uberon CRF service
-    env:
-      IMAGE_NAME: crf_service_craft_uberon
-      ENV_FILE: build-crf-services/uberon-craft.env
-      DOCKERFILE: build-crf-services/crf-service.Dockerfile
-      GCE_REGION: us-central1
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@master
-        with:
-          project_id: ${{ secrets.GCE_PROJECT }}
-          service_account_key: ${{ secrets.GCE_SA_KEY }}
-          version: '290.0.1'
-      - name: Configure Docker Authentication
-        run: gcloud --quiet auth configure-docker
-      - name: Set MODEL_VERSION env
-        run: echo "MODEL_VERSION=$(grep 'UBERON.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
-      - name: Set model-specific environment variables
-        run: while read line; do echo "$line" >> $GITHUB_ENV ; done < ${ENV_FILE}
-      - name: Build Docker Image
-        run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" --build-arg MODEL_KEY_ARG=$MODEL_KEY --build-arg MODEL_FILE_PREFIX_ARG=$PROJECT_ID$MODEL_FILE_PREFIX --build-arg MODEL_VERSION_ARG=$MODEL_VERSION .
-      - name: Publish Docker Image to Google Container Registry
-        run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
+  # build-crf-service-container-craft-uberon:
+  #   runs-on: ubuntu-latest
+  #   needs: build-and-publish-crf-model-craft-uberon
+  #   name: Build container to host craft-uberon CRF service
+  #   env:
+  #     IMAGE_NAME: crf_service_craft_uberon
+  #     ENV_FILE: build-crf-services/uberon-craft.env
+  #     DOCKERFILE: build-crf-services/crf-service.Dockerfile
+  #     GCE_REGION: us-central1
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Set up Cloud SDK
+  #       uses: google-github-actions/setup-gcloud@master
+  #       with:
+  #         project_id: ${{ secrets.GCE_PROJECT }}
+  #         service_account_key: ${{ secrets.GCE_SA_KEY }}
+  #         version: '290.0.1'
+  #     - name: Configure Docker Authentication
+  #       run: gcloud --quiet auth configure-docker
+  #     - name: Set MODEL_VERSION env
+  #       run: echo "MODEL_VERSION=$(grep 'UBERON.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
+  #     - name: Set model-specific environment variables
+  #       run: while read line; do echo "$line" >> $GITHUB_ENV ; done < ${ENV_FILE}
+  #     - name: Build Docker Image
+  #       run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" --build-arg MODEL_KEY_ARG=$MODEL_KEY --build-arg MODEL_FILE_PREFIX_ARG=$PROJECT_ID$MODEL_FILE_PREFIX --build-arg MODEL_VERSION_ARG=$MODEL_VERSION .
+  #     - name: Publish Docker Image to Google Container Registry
+  #       run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
 
 
 
