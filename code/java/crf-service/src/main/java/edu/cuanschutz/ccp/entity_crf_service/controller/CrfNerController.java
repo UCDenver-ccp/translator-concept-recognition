@@ -66,7 +66,7 @@ public class CrfNerController {
 		List<TextAnnotation> sentenceAnnots = new ArrayList<TextAnnotation>();
 
 		for (String line : sentencesToProcess.split("\\n")) {
-			String[] cols = line.split("\\t");
+			String[] cols = line.split("\\t", -1);
 			String documentId = cols[0];
 			String annotId = cols[1];
 			String coveredText = cols[3];
