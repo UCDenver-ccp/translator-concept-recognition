@@ -288,7 +288,7 @@ jobs:
 
   build-crf-service-container-craft-chebi:
     runs-on: ubuntu-latest
-    needs: build-and-publish-crf-model-craft-chebi
+    # needs: build-and-publish-crf-model-craft-chebi
     name: Build container to host craft-chebi CRF service
     env:
       IMAGE_NAME: crf_service_craft_chebi
