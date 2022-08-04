@@ -16,24 +16,24 @@ env:
   GCE_REGION: us-central1
 
 jobs:
-  # ci:
-  #   name: Java CI 
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Set up JDK 8
-  #       uses: actions/setup-java@v2
-  #       with:
-  #         java-version: '8'
-  #         distribution: 'adopt'
-  #     - name: Cache Maven packages
-  #       uses: actions/cache@v2
-  #       with:
-  #         path: ~/.m2
-  #         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-  #         restore-keys: ${{ runner.os }}-m2
-  #     - name: Build with Maven
-  #       run: mvn --batch-mode --update-snapshots verify --file code/java/crf-utility/pom.xml
+  ci:
+    name: Java CI 
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 8
+        uses: actions/setup-java@v2
+        with:
+          java-version: '8'
+          distribution: 'adopt'
+      - name: Cache Maven packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+      - name: Build with Maven
+        run: mvn --batch-mode --update-snapshots verify --file code/java/crf-utility/pom.xml
 
   # check-need-to-build-crf-model-ncbi-disease:
   #   continue-on-error: true # the skip-ncbi-disease step checks to see if 'ncbi-disease' or 'src' 
