@@ -87,39 +87,39 @@ jobs:
   #       run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME$GITHUB_SHA"
        
 
-  build-crf-service-container-ncbi-disease:
-    runs-on: ubuntu-latest
-    # needs: build-and-publish-crf-model-ncbi-disease
-    name: Build container to host NCBI Disease CRF service
-    env:
-      IMAGE_NAME: crf_service_ncbi_disease
-      ENV_FILE: build-crf-services/ncbi-disease.env
-      DOCKERFILE: build-crf-services/crf-service.Dockerfile
-      GCE_REGION: us-central1
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@main
-        with:
-          project_id: ${{ secrets.GCE_PROJECT }}
-          service_account_key: ${{ secrets.GCE_SA_KEY }}
-          version: '290.0.1'
-      - name: Configure Docker Authentication
-        run: gcloud --quiet auth configure-docker
-      - name: Set MODEL_VERSION env
-        run: echo "MODEL_VERSION=$(grep 'DISEASE.NCBIDISEASE' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
-      - name: Set model-specific environment variables
-        run: while read line; do echo "$line" >> $GITHUB_ENV ; done < ${ENV_FILE}
-     # - name: Output envs 1
-     #   run: echo "MODEL_FILE_PREFIX -- $MODEL_FILE_PREFIX"
-     # - name: Output envs 2
-     #   run: echo "MODEL_KEY -- $MODEL_KEY"
-     # - name: Output envs 3
-     #   run: echo "MODEL_VERSION -- $MODEL_VERSION"
-      - name: Build Docker Image
-        run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" --build-arg MODEL_KEY_ARG=$MODEL_KEY --build-arg MODEL_FILE_PREFIX_ARG=$PROJECT_ID$MODEL_FILE_PREFIX --build-arg MODEL_VERSION_ARG=$MODEL_VERSION .
-      - name: Publish Docker Image to Google Container Registry
-        run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
+  # build-crf-service-container-ncbi-disease:
+  #   runs-on: ubuntu-latest
+  #   # needs: build-and-publish-crf-model-ncbi-disease
+  #   name: Build container to host NCBI Disease CRF service
+  #   env:
+  #     IMAGE_NAME: crf_service_ncbi_disease
+  #     ENV_FILE: build-crf-services/ncbi-disease.env
+  #     DOCKERFILE: build-crf-services/crf-service.Dockerfile
+  #     GCE_REGION: us-central1
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Set up Cloud SDK
+  #       uses: google-github-actions/setup-gcloud@main
+  #       with:
+  #         project_id: ${{ secrets.GCE_PROJECT }}
+  #         service_account_key: ${{ secrets.GCE_SA_KEY }}
+  #         version: '290.0.1'
+  #     - name: Configure Docker Authentication
+  #       run: gcloud --quiet auth configure-docker
+  #     - name: Set MODEL_VERSION env
+  #       run: echo "MODEL_VERSION=$(grep 'DISEASE.NCBIDISEASE' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
+  #     - name: Set model-specific environment variables
+  #       run: while read line; do echo "$line" >> $GITHUB_ENV ; done < ${ENV_FILE}
+  #    # - name: Output envs 1
+  #    #   run: echo "MODEL_FILE_PREFIX -- $MODEL_FILE_PREFIX"
+  #    # - name: Output envs 2
+  #    #   run: echo "MODEL_KEY -- $MODEL_KEY"
+  #    # - name: Output envs 3
+  #    #   run: echo "MODEL_VERSION -- $MODEL_VERSION"
+  #     - name: Build Docker Image
+  #       run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" --build-arg MODEL_KEY_ARG=$MODEL_KEY --build-arg MODEL_FILE_PREFIX_ARG=$PROJECT_ID$MODEL_FILE_PREFIX --build-arg MODEL_VERSION_ARG=$MODEL_VERSION .
+  #     - name: Publish Docker Image to Google Container Registry
+  #       run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
 
 
 
@@ -286,39 +286,39 @@ jobs:
   #       run: sh -c ".github/workflows/monitor-ai-platform-job.sh $IMAGE_NAME$GITHUB_SHA"
         
 
-  # build-crf-service-container-craft-chebi:
-  #   runs-on: ubuntu-latest
-  #   needs: build-and-publish-crf-model-craft-chebi
-  #   name: Build container to host craft-chebi CRF service
-  #   env:
-  #     IMAGE_NAME: crf_service_craft_chebi
-  #     ENV_FILE: build-crf-services/chebi-craft.env
-  #     DOCKERFILE: build-crf-services/crf-service.Dockerfile
-  #     GCE_REGION: us-central1
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Set up Cloud SDK
-  #       uses: google-github-actions/setup-gcloud@master
-  #       with:
-  #         project_id: ${{ secrets.GCE_PROJECT }}
-  #         service_account_key: ${{ secrets.GCE_SA_KEY }}
-  #         version: '290.0.1'
-  #     - name: Configure Docker Authentication
-  #       run: gcloud --quiet auth configure-docker
-  #     - name: Set MODEL_VERSION env
-  #       run: echo "MODEL_VERSION=$(grep 'CHEBI.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
-  #     - name: Set model-specific environment variables
-  #       run: while read line; do echo "$line" >> $GITHUB_ENV ; done < ${ENV_FILE}
-  #     - name: Output envs 1
-  #       run: echo "MODEL_FILE_PREFIX -- $MODEL_FILE_PREFIX"
-  #     - name: Output envs 2
-  #       run: echo "MODEL_KEY -- $MODEL_KEY"
-  #     - name: Output envs 3
-  #       run: echo "MODEL_VERSION -- $MODEL_VERSION"
-  #     - name: Build Docker Image
-  #       run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" --build-arg MODEL_KEY_ARG=$MODEL_KEY --build-arg MODEL_FILE_PREFIX_ARG=$PROJECT_ID$MODEL_FILE_PREFIX --build-arg MODEL_VERSION_ARG=$MODEL_VERSION .
-  #     - name: Publish Docker Image to Google Container Registry
-  #       run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
+  build-crf-service-container-craft-chebi:
+    runs-on: ubuntu-latest
+    needs: build-and-publish-crf-model-craft-chebi
+    name: Build container to host craft-chebi CRF service
+    env:
+      IMAGE_NAME: crf_service_craft_chebi
+      ENV_FILE: build-crf-services/chebi-craft.env
+      DOCKERFILE: build-crf-services/crf-service.Dockerfile
+      GCE_REGION: us-central1
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@master
+        with:
+          project_id: ${{ secrets.GCE_PROJECT }}
+          service_account_key: ${{ secrets.GCE_SA_KEY }}
+          version: '290.0.1'
+      - name: Configure Docker Authentication
+        run: gcloud --quiet auth configure-docker
+      - name: Set MODEL_VERSION env
+        run: echo "MODEL_VERSION=$(grep 'CHEBI.CRAFT' MODEL_VERSIONS | cut -f 2 -d '=')" >> $GITHUB_ENV
+      - name: Set model-specific environment variables
+        run: while read line; do echo "$line" >> $GITHUB_ENV ; done < ${ENV_FILE}
+      - name: Output envs 1
+        run: echo "MODEL_FILE_PREFIX -- $MODEL_FILE_PREFIX"
+      - name: Output envs 2
+        run: echo "MODEL_KEY -- $MODEL_KEY"
+      - name: Output envs 3
+        run: echo "MODEL_VERSION -- $MODEL_VERSION"
+      - name: Build Docker Image
+        run: docker build --tag "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION" -f "$DOCKERFILE" --build-arg MODEL_KEY_ARG=$MODEL_KEY --build-arg MODEL_FILE_PREFIX_ARG=$PROJECT_ID$MODEL_FILE_PREFIX --build-arg MODEL_VERSION_ARG=$MODEL_VERSION .
+      - name: Publish Docker Image to Google Container Registry
+        run: docker push "gcr.io/$PROJECT_ID/$IMAGE_NAME:$MODEL_VERSION"
 
 
 
