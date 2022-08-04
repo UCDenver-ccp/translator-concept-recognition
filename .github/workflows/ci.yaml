@@ -99,7 +99,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@master
+        uses: google-github-actions/setup-gcloud@main
         with:
           project_id: ${{ secrets.GCE_PROJECT }}
           service_account_key: ${{ secrets.GCE_SA_KEY }}
